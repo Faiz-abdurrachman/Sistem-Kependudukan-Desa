@@ -21,7 +21,6 @@
 /build
 
 # misc
-.DS_Store
 *.pem
 
 # debug
@@ -39,3 +38,79 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# documentation and setup files (keep only README.md)
+*.md
+!README.md
+
+# exclude documentation files (step-by-step guides, etc)
+GUIDE_*.md
+*_GUIDE.md
+*_TESTING.md
+*_CHECKLIST.md
+*_REVIEW.md
+*_PLAN.md
+*_COMPLETE.md
+*_LENGKAP.md
+*_DETAIL*.md
+*_ERRORS.md
+*_IMPROVEMENTS.md
+*_RECOMMENDATION.md
+*_STEPS*.md
+*_TODO*.md
+EXPLANATION_*.md
+PERBEDAAN_*.md
+CARA_*.md
+FIX_*.md
+CHECK_*.md
+SETUP_*.md
+SUMMARY_*.md
+ROADMAP_*.md
+IMPLEMENTATION_*.md
+NEXT_*.md
+TAHAP_*.md
+QUICK_*.md
+
+# database setup and migration files
+*.sql
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+.cache/
+.temp/
