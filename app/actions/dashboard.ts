@@ -81,7 +81,7 @@ export async function getDashboardStats() {
       PINDAH_KELUAR: 0,
     };
 
-    mutasiPerJenis?.forEach((m) => {
+    mutasiPerJenis?.forEach((m: any) => {
       if (m.jenis_mutasi in mutasiCounts) {
         mutasiCounts[m.jenis_mutasi as keyof typeof mutasiCounts]++;
       }
@@ -102,7 +102,7 @@ export async function getDashboardStats() {
       .lte("tanggal_cetak", endOfMonthStr);
 
     const suratCounts: Record<string, number> = {};
-    suratPerJenis?.forEach((s) => {
+    suratPerJenis?.forEach((s: any) => {
       suratCounts[s.jenis_surat] = (suratCounts[s.jenis_surat] || 0) + 1;
     });
 
@@ -117,7 +117,7 @@ export async function getDashboardStats() {
       PEREMPUAN: 0,
     };
 
-    pendudukPerJK?.forEach((p) => {
+    pendudukPerJK?.forEach((p: any) => {
       if (p.jenis_kelamin === "LAKI-LAKI") jkCounts["LAKI-LAKI"]++;
       if (p.jenis_kelamin === "PEREMPUAN") jkCounts.PEREMPUAN++;
     });

@@ -26,7 +26,7 @@ export const suratKeluarSchema = z.object({
   jenis_surat: z.enum(
     ["SKTM", "DOMISILI", "KEMATIAN", "KELAHIRAN", "USAHA", "LAINNYA"],
     {
-      errorMap: () => ({ message: "Jenis surat tidak valid" }),
+      message: "Jenis surat tidak valid",
     }
   ),
 

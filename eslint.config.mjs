@@ -13,6 +13,12 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    rules: {
+      // Disable Tailwind CSS class name warnings (false positives)
+      "tailwindcss/no-custom-classname": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;

@@ -29,8 +29,7 @@ const dateSchema = z.preprocess(
   },
   z
     .date({
-      invalid_type_error: "Tanggal tidak valid",
-      required_error: "Tanggal lahir wajib diisi",
+      message: "Tanggal tidak valid",
     })
     .max(new Date(), "Tanggal tidak boleh di masa depan")
 );
@@ -55,24 +54,24 @@ export const pendudukSchema = z
     tgl_lahir: dateSchema,
 
     jenis_kelamin: z.enum(["LAKI-LAKI", "PEREMPUAN"], {
-      errorMap: () => ({ message: "Pilih jenis kelamin" }),
+      message: "Pilih jenis kelamin",
     }),
 
     gol_darah: z.enum(["A", "B", "AB", "O", "-"], {
-      errorMap: () => ({ message: "Pilih golongan darah" }),
+      message: "Pilih golongan darah",
     }),
 
     agama: z.enum(
       ["ISLAM", "KRISTEN", "KATOLIK", "HINDU", "BUDDHA", "KONGHUCU", "LAINNYA"],
       {
-        errorMap: () => ({ message: "Pilih agama" }),
+        message: "Pilih agama",
       }
     ),
 
     status_kawin: z.enum(
       ["BELUM KAWIN", "KAWIN", "CERAI HIDUP", "CERAI MATI"],
       {
-        errorMap: () => ({ message: "Pilih status kawin" }),
+        message: "Pilih status kawin",
       }
     ),
 
@@ -91,7 +90,7 @@ export const pendudukSchema = z
         "LAINNYA",
       ],
       {
-        errorMap: () => ({ message: "Pilih SHDK" }),
+        message: "Pilih SHDK",
       }
     ),
 
@@ -108,7 +107,7 @@ export const pendudukSchema = z
         "S3",
       ],
       {
-        errorMap: () => ({ message: "Pilih pendidikan" }),
+        message: "Pilih pendidikan",
       }
     ),
 
@@ -125,7 +124,7 @@ export const pendudukSchema = z
     nama_ibu: z.string().max(100, "Nama ibu maksimal 100 karakter").optional(),
 
     status_dasar: z.enum(["HIDUP", "MATI", "PINDAH"], {
-      errorMap: () => ({ message: "Pilih status dasar" }),
+      message: "Pilih status dasar",
     }),
 
     foto_ktp_url: z

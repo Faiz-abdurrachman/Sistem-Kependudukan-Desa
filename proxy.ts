@@ -1,12 +1,13 @@
 /**
- * Next.js Middleware
+ * Next.js Proxy
  * Menangani authentication & protected routes
+ * Migrated from middleware.ts to proxy.ts following Next.js 16 conventions
  */
 
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let response = NextResponse.next({
     request: {
       headers: request.headers,

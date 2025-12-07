@@ -24,7 +24,7 @@ export const mutasiSchema = z.object({
   penduduk_id: z.string().uuid("ID Penduduk tidak valid"),
 
   jenis_mutasi: z.enum(["LAHIR", "MATI", "PINDAH_DATANG", "PINDAH_KELUAR"], {
-    errorMap: () => ({ message: "Jenis mutasi tidak valid" }),
+    message: "Jenis mutasi tidak valid",
   }),
 
   tanggal_peristiwa: dateSchema,
