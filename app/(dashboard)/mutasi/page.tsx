@@ -3,8 +3,6 @@
  * Halaman untuk melihat daftar mutasi penduduk
  */
 
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
 import { getMutasiList } from "@/app/actions/mutasi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,14 +39,7 @@ export default async function MutasiPage({
 }: {
   searchParams: SearchParams | Promise<SearchParams>;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
+  // Auth sudah di-check di layout
 
   // Handle searchParams
   const params =

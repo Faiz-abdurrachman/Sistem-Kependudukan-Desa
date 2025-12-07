@@ -3,8 +3,6 @@
  * Halaman untuk melihat daftar surat keluar
  */
 
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
 import { getSuratKeluarList } from "@/app/actions/surat-keluar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,14 +39,7 @@ export default async function SuratKeluarPage({
 }: {
   searchParams: SearchParams | Promise<SearchParams>;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
+  // Auth sudah di-check di layout
 
   // Handle searchParams
   const params =

@@ -34,9 +34,7 @@ export async function getDashboardStats() {
         .from("penduduk")
         .select("id", { count: "exact", head: true })
         .eq("status_dasar", "HIDUP"),
-      supabase
-        .from("penduduk")
-        .select("id", { count: "exact", head: true }),
+      supabase.from("penduduk").select("id", { count: "exact", head: true }),
       supabase
         .from("penduduk")
         .select("id", { count: "exact", head: true })
@@ -48,9 +46,7 @@ export async function getDashboardStats() {
       supabase
         .from("kartu_keluarga")
         .select("id", { count: "exact", head: true }),
-      supabase
-        .from("wilayah")
-        .select("id", { count: "exact", head: true }),
+      supabase.from("wilayah").select("id", { count: "exact", head: true }),
     ]);
 
     // Calculate date range once

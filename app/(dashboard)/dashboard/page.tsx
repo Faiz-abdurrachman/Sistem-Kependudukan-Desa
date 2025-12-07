@@ -3,8 +3,6 @@
  * Halaman utama dengan data lengkap dan visualisasi
  */
 
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -24,18 +22,20 @@ import { getDashboardStats } from "@/app/actions/dashboard";
 import Link from "next/link";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
-import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
-import { RecentActivity } from "@/components/dashboard/recent-activity";
+import dynamic from "next/dynamic";
+
+// Dynamic imports untuk mengurangi initial bundle size
+const DashboardCharts = dynamic(
+  () => import("@/components/dashboard/dashboard-charts").then((mod) => ({ default: mod.DashboardCharts })),
+  { ssr: true, loading: () => <div className="h-64 flex items-center justify-center"><p className="text-slate-400">Memuat chart...</p></div> }
+);
+const RecentActivity = dynamic(
+  () => import("@/components/dashboard/recent-activity").then((mod) => ({ default: mod.RecentActivity })),
+  { ssr: true, loading: () => <div className="h-32 flex items-center justify-center"><p className="text-slate-400">Memuat aktivitas...</p></div> }
+);
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
+  // Auth sudah di-check di layout
 
   // Get dashboard statistics with error handling
   let statsResult;

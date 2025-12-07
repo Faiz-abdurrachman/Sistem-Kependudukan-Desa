@@ -5,7 +5,8 @@
 
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -64,12 +65,6 @@ const menuItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
-
-  const handleClick = (href: string) => {
-    router.push(href);
-    router.refresh();
-  };
 
   return (
     <div className="flex h-full w-64 flex-col border-r border-slate-700/50 bg-slate-800 relative z-10">
@@ -96,9 +91,10 @@ export function Sidebar() {
             pathname === item.href || pathname?.startsWith(item.href + "/");
 
           return (
-            <button
+            <Link
               key={item.href}
-              onClick={() => handleClick(item.href)}
+              href={item.href}
+              prefetch={true}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all cursor-pointer relative z-10 w-full text-left border-0",
                 isActive
@@ -108,7 +104,7 @@ export function Sidebar() {
             >
               <Icon className="h-5 w-5 shrink-0" />
               <span className="flex-1">{item.title}</span>
-            </button>
+            </Link>
           );
         })}
       </nav>

@@ -76,7 +76,6 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
-
   // Redirect ke login jika belum login dan mengakses protected route
   if (isProtectedPath && !user) {
     const redirectUrl = new URL("/login", request.url);

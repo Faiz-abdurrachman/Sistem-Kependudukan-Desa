@@ -3,8 +3,6 @@
  * Halaman untuk melihat daftar penduduk
  */
 
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
 import { getPendudukList, importPenduduk } from "@/app/actions/penduduk";
 import { canCreate, canUpdate, canDelete } from "@/lib/utils/rbac";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,14 +34,7 @@ export default async function PendudukPage({
 }: {
   searchParams: SearchParams | Promise<SearchParams>;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
+  // Auth sudah di-check di layout, tidak perlu lagi di sini
 
   // Handle searchParams (bisa Promise di Next.js 15+)
   const params =
