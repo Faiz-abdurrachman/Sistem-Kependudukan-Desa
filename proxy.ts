@@ -73,8 +73,12 @@ export async function proxy(request: NextRequest) {
   }
 
   // Redirect ke dashboard jika sudah login dan mengakses login page
+  // Kecuali ada query parameter ?force=true untuk bypass redirect (untuk testing)
   if (request.nextUrl.pathname === "/login" && user) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    const forceLogin = request.nextUrl.searchParams.get("force");
+    if (forceLogin !== "true") {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
   }
 
   return response;

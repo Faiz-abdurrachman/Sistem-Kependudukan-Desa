@@ -27,10 +27,27 @@ import {
 } from "@/app/actions/reports";
 
 export function ReportGenerator() {
-  const [reportType, setReportType] = useState<string>("");
+  // Separate state for each report category
+  const [pendudukType, setPendudukType] = useState<string>("");
+  const [mutasiType, setMutasiType] = useState<string>("");
+  const [suratType, setSuratType] = useState<string>("");
+  const [statistikType, setStatistikType] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (
+    category: "penduduk" | "mutasi" | "surat" | "statistik"
+  ) => {
+    let reportType = "";
+    if (category === "penduduk") {
+      reportType = pendudukType;
+    } else if (category === "mutasi") {
+      reportType = mutasiType;
+    } else if (category === "surat") {
+      reportType = suratType;
+    } else if (category === "statistik") {
+      reportType = statistikType;
+    }
+
     if (!reportType) {
       toast.error("Pilih jenis laporan terlebih dahulu");
       return;
@@ -110,9 +127,9 @@ export function ReportGenerator() {
           <div className="space-y-2">
             <Label className="text-white">Jenis Laporan</Label>
             <Select
-              value={reportType.startsWith("penduduk-") ? reportType : ""}
+              value={pendudukType}
               onValueChange={(value) => {
-                setReportType(value);
+                setPendudukType(value);
               }}
             >
               <SelectTrigger className="bg-gray-50">
@@ -132,10 +149,8 @@ export function ReportGenerator() {
             </Select>
           </div>
           <Button
-            onClick={handleGenerate}
-            disabled={
-              isGenerating || !reportType || !reportType.startsWith("penduduk-")
-            }
+            onClick={() => handleGenerate("penduduk")}
+            disabled={isGenerating || !pendudukType}
             className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-md border-2 border-blue-500 hover:border-blue-400"
           >
             <Download className="mr-2 h-4 w-4" />
@@ -156,9 +171,9 @@ export function ReportGenerator() {
           <div className="space-y-2">
             <Label className="text-white">Jenis Laporan</Label>
             <Select
-              value={reportType.startsWith("mutasi-") ? reportType : ""}
+              value={mutasiType}
               onValueChange={(value) => {
-                setReportType(value);
+                setMutasiType(value);
               }}
             >
               <SelectTrigger className="bg-gray-50">
@@ -174,10 +189,8 @@ export function ReportGenerator() {
             </Select>
           </div>
           <Button
-            onClick={handleGenerate}
-            disabled={
-              isGenerating || !reportType || !reportType.startsWith("mutasi-")
-            }
+            onClick={() => handleGenerate("mutasi")}
+            disabled={isGenerating || !mutasiType}
             className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-md border-2 border-blue-500 hover:border-blue-400"
           >
             <Download className="mr-2 h-4 w-4" />
@@ -198,9 +211,9 @@ export function ReportGenerator() {
           <div className="space-y-2">
             <Label className="text-white">Jenis Laporan</Label>
             <Select
-              value={reportType.startsWith("surat-") ? reportType : ""}
+              value={suratType}
               onValueChange={(value) => {
-                setReportType(value);
+                setSuratType(value);
               }}
             >
               <SelectTrigger className="bg-gray-50">
@@ -214,10 +227,8 @@ export function ReportGenerator() {
             </Select>
           </div>
           <Button
-            onClick={handleGenerate}
-            disabled={
-              isGenerating || !reportType || !reportType.startsWith("surat-")
-            }
+            onClick={() => handleGenerate("surat")}
+            disabled={isGenerating || !suratType}
             className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-md border-2 border-blue-500 hover:border-blue-400"
           >
             <Download className="mr-2 h-4 w-4" />
@@ -238,9 +249,9 @@ export function ReportGenerator() {
           <div className="space-y-2">
             <Label className="text-white">Jenis Laporan</Label>
             <Select
-              value={reportType.startsWith("statistik-") ? reportType : ""}
+              value={statistikType}
               onValueChange={(value) => {
-                setReportType(value);
+                setStatistikType(value);
               }}
             >
               <SelectTrigger className="bg-gray-50">
@@ -260,12 +271,8 @@ export function ReportGenerator() {
             </Select>
           </div>
           <Button
-            onClick={handleGenerate}
-            disabled={
-              isGenerating ||
-              !reportType ||
-              !reportType.startsWith("statistik-")
-            }
+            onClick={() => handleGenerate("statistik")}
+            disabled={isGenerating || !statistikType}
             className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-md border-2 border-blue-500 hover:border-blue-400"
           >
             <Download className="mr-2 h-4 w-4" />

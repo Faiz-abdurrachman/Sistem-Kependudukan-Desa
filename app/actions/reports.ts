@@ -91,20 +91,27 @@ export async function generateReportPenduduk(
         return { error: "Jenis laporan tidak valid" };
     }
 
+    // Check if data is empty
+    if (!pendudukData || pendudukData.length === 0) {
+      return {
+        error: "Tidak ada data untuk jenis laporan ini. Pastikan sudah ada data di database.",
+      };
+    }
+
     // Format data untuk export
     const formattedData = pendudukData.map((p: any) => ({
-      NIK: p.nik,
-      "Nama Lengkap": p.nama_lengkap,
+      NIK: p.nik || "-",
+      "Nama Lengkap": p.nama_lengkap || "-",
       "Tempat Lahir": p.tempat_lahir || "-",
       "Tanggal Lahir": p.tgl_lahir || "-",
-      "Jenis Kelamin": p.jenis_kelamin,
+      "Jenis Kelamin": p.jenis_kelamin || "-",
       "Golongan Darah": p.gol_darah || "-",
-      Agama: p.agama,
-      "Status Kawin": p.status_kawin,
-      SHDK: p.shdk,
-      Pendidikan: p.pendidikan,
+      Agama: p.agama || "-",
+      "Status Kawin": p.status_kawin || "-",
+      SHDK: p.shdk || "-",
+      Pendidikan: p.pendidikan || "-",
       Pekerjaan: p.pekerjaan || "-",
-      "Status Dasar": p.status_dasar,
+      "Status Dasar": p.status_dasar || "-",
     }));
 
     // Create Excel
@@ -224,10 +231,17 @@ export async function generateReportMutasi(jenis: string) {
         return { error: "Jenis laporan tidak valid" };
     }
 
+    // Check if data is empty
+    if (!mutasiData || mutasiData.length === 0) {
+      return {
+        error: "Tidak ada data mutasi untuk jenis laporan ini. Pastikan sudah ada data mutasi di database.",
+      };
+    }
+
     // Format data
     const formattedData = mutasiData.map((m: any) => ({
       "Tanggal Peristiwa": m.tanggal_peristiwa || "-",
-      "Jenis Mutasi": m.jenis_mutasi,
+      "Jenis Mutasi": m.jenis_mutasi || "-",
       "NIK Penduduk": m.penduduk?.nik || "-",
       "Nama Penduduk": m.penduduk?.nama_lengkap || "-",
       Keterangan: m.keterangan || "-",
@@ -327,10 +341,17 @@ export async function generateReportSurat(jenis: string) {
         return { error: "Jenis laporan tidak valid" };
     }
 
+    // Check if data is empty
+    if (!suratData || suratData.length === 0) {
+      return {
+        error: "Tidak ada data surat untuk jenis laporan ini. Pastikan sudah ada data surat keluar di database.",
+      };
+    }
+
     // Format data
     const formattedData = suratData.map((s: any) => ({
-      "Nomor Surat": s.nomor_surat,
-      "Jenis Surat": s.jenis_surat,
+      "Nomor Surat": s.nomor_surat || "-",
+      "Jenis Surat": s.jenis_surat || "-",
       "Tanggal Cetak": s.tanggal_cetak || "-",
       "NIK Penduduk": s.penduduk?.nik || "-",
       "Nama Penduduk": s.penduduk?.nama_lengkap || "-",
@@ -459,6 +480,13 @@ export async function generateReportStatistik(jenis: string) {
 
       default:
         return { error: "Jenis laporan tidak valid" };
+    }
+
+    // Check if data is empty
+    if (!statsData || statsData.length === 0) {
+      return {
+        error: "Tidak ada data statistik untuk jenis laporan ini. Pastikan sudah ada data di database.",
+      };
     }
 
     // Create Excel

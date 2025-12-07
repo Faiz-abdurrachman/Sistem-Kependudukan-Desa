@@ -19,23 +19,42 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2 } from "lucide-react";
+import { Loader2, LogOut } from "lucide-react";
+import { logout } from "@/app/actions/auth";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") || "/dashboard";
+  const forceLogin = searchParams.get("force") === "true";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        setIsLoggedIn(!!user);
+      } catch (err) {
+        console.error("Error checking auth:", err);
+      }
+    };
+    checkAuth();
+  }, []);
 
   // Debug: Check environment variables on mount
   useEffect(() => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    
+
     if (!url || !key) {
       console.error("❌ Missing environment variables:", {
         hasUrl: !!url,
@@ -86,7 +105,7 @@ function LoginForm() {
         stack: err?.stack,
         name: err?.name,
       });
-      
+
       // Check if it's an environment variable error
       if (err?.message?.includes("Missing Supabase environment variables")) {
         setError(
@@ -98,7 +117,8 @@ function LoginForm() {
         );
       } else {
         setError(
-          err?.message || "Terjadi kesalahan. Silakan coba lagi atau hubungi administrator."
+          err?.message ||
+            "Terjadi kesalahan. Silakan coba lagi atau hubungi administrator."
         );
       }
     } finally {
@@ -124,6 +144,30 @@ function LoginForm() {
             </CardDescription>
           </CardHeader>
           <CardContent className="pb-8">
+            {/* Show message if already logged in */}
+            {isLoggedIn && !forceLogin && (
+              <Alert className="mb-4 border-blue-300 bg-blue-50">
+                <AlertDescription className="text-blue-800">
+                  <div className="flex items-center justify-between">
+                    <span>Anda sudah login. Ingin login dengan akun lain?</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        await logout();
+                        router.refresh();
+                        setIsLoggedIn(false);
+                      }}
+                      className="ml-4 border-blue-400 text-blue-700 hover:bg-blue-100"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Logout
+                    </Button>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
+
             <form
               onSubmit={handleLogin}
               className="space-y-5"
