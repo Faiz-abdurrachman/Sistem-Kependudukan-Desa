@@ -17,7 +17,10 @@ export async function createClient() {
   const key = supabaseAnonKey || "placeholder-key";
 
   // Log warning in development if env vars are missing
-  if (process.env.NODE_ENV === "development" && (!supabaseUrl || !supabaseAnonKey)) {
+  if (
+    process.env.NODE_ENV === "development" &&
+    (!supabaseUrl || !supabaseAnonKey)
+  ) {
     console.warn(
       "⚠️ Missing Supabase environment variables. Please check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local"
     );
