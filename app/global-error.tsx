@@ -2,7 +2,13 @@
 
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { AlertCircle, RefreshCw } from "lucide-react";
 
 export default function GlobalError({
@@ -52,7 +58,8 @@ export default function GlobalError({
 
             <div className="text-center">
               <p className="text-xs text-slate-400">
-                Silakan refresh halaman atau hubungi administrator jika masalah berlanjut.
+                Silakan refresh halaman atau hubungi administrator jika masalah
+                berlanjut.
               </p>
             </div>
           </CardContent>
@@ -61,4 +68,3 @@ export default function GlobalError({
     </html>
   );
 }
-

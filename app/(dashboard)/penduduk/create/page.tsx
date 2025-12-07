@@ -9,6 +9,9 @@ import { getKKList } from "@/app/actions/kartu-keluarga";
 import { PendudukForm } from "@/components/penduduk/penduduk-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+// Force dynamic rendering to prevent build-time errors
+export const dynamic = "force-dynamic";
+
 export default async function CreatePendudukPage() {
   const supabase = await createClient();
   const {

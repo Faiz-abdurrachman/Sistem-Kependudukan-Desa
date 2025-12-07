@@ -8,6 +8,9 @@ import { redirect } from "next/navigation";
 import { WilayahForm } from "@/components/wilayah/wilayah-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+// Force dynamic rendering to prevent build-time errors
+export const dynamic = "force-dynamic";
+
 export default async function CreateWilayahPage() {
   const supabase = await createClient();
   const {

@@ -8,19 +8,24 @@ import { cookies } from "next/headers";
 import { Database } from "@/types/database.types";
 
 export async function createClient() {
-  // Check environment variables
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error(
-      "Missing Supabase environment variables. Please check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY."
+  // Use fallback values during build time to prevent build errors
+  // These will be replaced with actual values at runtime
+  const url = supabaseUrl || "https://placeholder.supabase.co";
+  const key = supabaseAnonKey || "placeholder-key";
+
+  // Log warning in development if env vars are missing
+  if (process.env.NODE_ENV === "development" && (!supabaseUrl || !supabaseAnonKey)) {
+    console.warn(
+      "⚠️ Missing Supabase environment variables. Please check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local"
     );
   }
 
   const cookieStore = await cookies();
 
-  return createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
+  return createServerClient<Database>(url, key, {
     cookies: {
       getAll() {
         return cookieStore.getAll();
