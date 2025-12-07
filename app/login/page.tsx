@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,21 @@ function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Debug: Check environment variables on mount
+  useEffect(() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    
+    if (!url || !key) {
+      console.error("❌ Missing environment variables:", {
+        hasUrl: !!url,
+        hasKey: !!key,
+      });
+    } else {
+      console.log("✅ Environment variables loaded");
+    }
+  }, []);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -38,10 +53,11 @@ function LoginForm() {
 
     try {
       const supabase = createClient();
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data, error: signInError } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
       if (signInError) {
         // Provide more specific error messages
@@ -65,11 +81,25 @@ function LoginForm() {
       router.refresh();
     } catch (err: any) {
       console.error("Login error:", err);
+      console.error("Error details:", {
+        message: err?.message,
+        stack: err?.stack,
+        name: err?.name,
+      });
+      
       // Check if it's an environment variable error
       if (err?.message?.includes("Missing Supabase environment variables")) {
-        setError("Konfigurasi aplikasi belum lengkap. Silakan hubungi administrator.");
+        setError(
+          "Konfigurasi aplikasi belum lengkap. Environment variables tidak ditemukan. Silakan hubungi administrator."
+        );
+      } else if (err?.message?.includes("fetch")) {
+        setError(
+          "Tidak dapat terhubung ke server. Pastikan koneksi internet Anda stabil."
+        );
       } else {
-        setError(err?.message || "Terjadi kesalahan. Silakan coba lagi.");
+        setError(
+          err?.message || "Terjadi kesalahan. Silakan coba lagi atau hubungi administrator."
+        );
       }
     } finally {
       setLoading(false);
