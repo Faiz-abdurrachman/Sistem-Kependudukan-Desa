@@ -20,6 +20,7 @@ Aplikasi web berbasis Next.js 16 dengan TypeScript untuk mengelola data kependud
 ## 🚀 Tech Stack
 
 ### Frontend
+
 - **Framework**: Next.js 16 (App Router) - Server Components & Server Actions
 - **Language**: TypeScript 5.x (Strict Mode)
 - **Styling**: Tailwind CSS 4.x
@@ -30,18 +31,21 @@ Aplikasi web berbasis Next.js 16 dengan TypeScript untuk mengelola data kependud
 - **State Management**: Zustand 5.x
 
 ### Backend & Database
+
 - **Database**: Supabase (PostgreSQL)
 - **Authentication**: Supabase Auth (JWT)
 - **Row Level Security**: RLS Policies
 - **API**: Next.js Server Actions (No API Routes)
 
 ### Export & Utilities
+
 - **Excel Export**: XLSX 0.18.x
 - **PDF Export**: jsPDF 3.x + jsPDF-AutoTable
 - **Date Handling**: date-fns 4.x
 - **Icons**: Lucide React
 
 ### Development Tools
+
 - **Linting**: ESLint 9.x + Next.js Config
 - **Type Checking**: TypeScript Strict Mode
 - **Build Tool**: Turbopack (Next.js 16)
@@ -339,22 +343,26 @@ npm run lint         # Run ESLint
 Aplikasi ini dibangun dengan mengikuti prinsip-prinsip clean code:
 
 1. **Separation of Concerns**
+
    - Server Actions di `app/actions/`
    - Components di `components/`
    - Utilities di `lib/utils/`
    - Validations di `lib/validations/`
 
 2. **Type Safety**
+
    - TypeScript strict mode
    - Zod schema validation
    - Type inference dari Supabase
 
 3. **Error Handling**
+
    - Try-catch blocks
    - User-friendly error messages
    - Proper error logging
 
 4. **Code Organization**
+
    - Consistent naming conventions
    - Modular file structure
    - Reusable components
@@ -391,12 +399,14 @@ Aplikasi ini dibangun dengan mengikuti prinsip-prinsip clean code:
 ## 🎯 Key Highlights
 
 ### ✨ Modern Architecture
+
 - **Next.js 16 App Router** - Latest Next.js features
 - **Server Components** - Optimized performance
 - **Server Actions** - Secure server-side operations
 - **TypeScript** - Type-safe development
 
 ### 🔒 Enterprise-Grade Security
+
 - **JWT Authentication** - Secure token-based auth
 - **RBAC** - Role-based access control
 - **RLS Policies** - Database-level security
@@ -404,12 +414,14 @@ Aplikasi ini dibangun dengan mengikuti prinsip-prinsip clean code:
 - **HTTPS** - Encrypted connections
 
 ### 📈 Scalable & Maintainable
+
 - **Modular Architecture** - Easy to extend
 - **Clean Code** - Following best practices
 - **Type Safety** - Reduced runtime errors
 - **Comprehensive Error Handling** - Better UX
 
 ### 🚀 Production Ready
+
 - **Optimized Build** - Fast load times
 - **SEO Friendly** - Server-side rendering
 - **Responsive Design** - Mobile-first approach
