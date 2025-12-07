@@ -38,21 +38,39 @@ function LoginForm() {
 
     try {
       const supabase = createClient();
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (signInError) {
-        setError(signInError.message || "Email atau password salah");
+        // Provide more specific error messages
+        if (signInError.message.includes("Invalid login credentials")) {
+          setError("Email atau password salah. Silakan coba lagi.");
+        } else if (signInError.message.includes("Email not confirmed")) {
+          setError("Email belum dikonfirmasi. Silakan cek email Anda.");
+        } else {
+          setError(signInError.message || "Email atau password salah");
+        }
+        return;
+      }
+
+      if (!data.user) {
+        setError("Gagal login. Silakan coba lagi.");
         return;
       }
 
       // Redirect ke halaman yang diminta atau dashboard
       router.push(redirect);
       router.refresh();
-    } catch (err) {
-      setError("Terjadi kesalahan. Silakan coba lagi.");
+    } catch (err: any) {
+      console.error("Login error:", err);
+      // Check if it's an environment variable error
+      if (err?.message?.includes("Missing Supabase environment variables")) {
+        setError("Konfigurasi aplikasi belum lengkap. Silakan hubungi administrator.");
+      } else {
+        setError(err?.message || "Terjadi kesalahan. Silakan coba lagi.");
+      }
     } finally {
       setLoading(false);
     }
