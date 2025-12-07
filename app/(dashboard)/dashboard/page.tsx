@@ -18,6 +18,7 @@ import {
   MapPin,
   Activity,
 } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
 import { getDashboardStats } from "@/app/actions/dashboard";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -26,16 +27,40 @@ import dynamic from "next/dynamic";
 
 // Dynamic imports untuk mengurangi initial bundle size
 const DashboardCharts = dynamic(
-  () => import("@/components/dashboard/dashboard-charts").then((mod) => ({ default: mod.DashboardCharts })),
-  { ssr: true, loading: () => <div className="h-64 flex items-center justify-center"><p className="text-slate-400">Memuat chart...</p></div> }
+  () =>
+    import("@/components/dashboard/dashboard-charts").then((mod) => ({
+      default: mod.DashboardCharts,
+    })),
+  {
+    ssr: true,
+    loading: () => (
+      <div className="h-64 flex items-center justify-center">
+        <p className="text-slate-400">Memuat chart...</p>
+      </div>
+    ),
+  }
 );
 const RecentActivity = dynamic(
-  () => import("@/components/dashboard/recent-activity").then((mod) => ({ default: mod.RecentActivity })),
-  { ssr: true, loading: () => <div className="h-32 flex items-center justify-center"><p className="text-slate-400">Memuat aktivitas...</p></div> }
+  () =>
+    import("@/components/dashboard/recent-activity").then((mod) => ({
+      default: mod.RecentActivity,
+    })),
+  {
+    ssr: true,
+    loading: () => (
+      <div className="h-32 flex items-center justify-center">
+        <p className="text-slate-400">Memuat aktivitas...</p>
+      </div>
+    ),
+  }
 );
 
 export default async function DashboardPage() {
-  // Auth sudah di-check di layout
+  // Auth sudah di-check di layout, tapi kita perlu user data untuk display
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   // Get dashboard statistics with error handling
   let statsResult;
