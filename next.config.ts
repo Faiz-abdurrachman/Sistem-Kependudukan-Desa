@@ -7,7 +7,14 @@ const nextConfig: NextConfig = {
   productionBrowserSourceMaps: false,
   // Vercel optimizations
   reactStrictMode: true,
-  // swcMinify is default in Next.js 16, no need to specify
+  // Performance optimizations
+  experimental: {
+    optimizePackageImports: ["lucide-react", "recharts", "date-fns"],
+  },
+  // Optimize images
+  images: {
+    formats: ["image/avif", "image/webp"],
+  },
 };
 
 export default nextConfig;

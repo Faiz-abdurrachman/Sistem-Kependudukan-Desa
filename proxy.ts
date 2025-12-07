@@ -8,6 +8,16 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function proxy(request: NextRequest) {
+  // Skip auth check for static assets and API routes
+  const pathname = request.nextUrl.pathname;
+  if (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api") ||
+    pathname.match(/\.(ico|png|jpg|jpeg|svg|gif|webp|css|js)$/)
+  ) {
+    return NextResponse.next();
+  }
+
   // Check environment variables
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -46,11 +56,7 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // Protected routes (harus login)
+  // Only check auth for protected routes
   const protectedPaths = [
     "/dashboard",
     "/penduduk",
@@ -62,8 +68,14 @@ export async function proxy(request: NextRequest) {
     "/pengaturan",
   ];
   const isProtectedPath = protectedPaths.some((path) =>
-    request.nextUrl.pathname.startsWith(path)
+    pathname.startsWith(path)
   );
+
+  // Skip auth check if not a protected path
+  if (!isProtectedPath && pathname !== "/login") {
+    return response;
+  }
+
 
   // Redirect ke login jika belum login dan mengakses protected route
   if (isProtectedPath && !user) {

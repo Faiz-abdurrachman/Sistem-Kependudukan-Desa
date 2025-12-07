@@ -96,8 +96,8 @@ function LoginForm() {
       }
 
       // Redirect ke halaman yang diminta atau dashboard
-      router.push(redirect);
-      router.refresh();
+      // Use replace instead of push for better performance
+      router.replace(redirect);
     } catch (err: any) {
       console.error("Login error:", err);
       console.error("Error details:", {

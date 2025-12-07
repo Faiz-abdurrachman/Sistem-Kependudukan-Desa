@@ -94,7 +94,8 @@ export async function generateReportPenduduk(
     // Check if data is empty
     if (!pendudukData || pendudukData.length === 0) {
       return {
-        error: "Tidak ada data untuk jenis laporan ini. Pastikan sudah ada data di database.",
+        error:
+          "Tidak ada data untuk jenis laporan ini. Pastikan sudah ada data di database.",
       };
     }
 
@@ -234,7 +235,8 @@ export async function generateReportMutasi(jenis: string) {
     // Check if data is empty
     if (!mutasiData || mutasiData.length === 0) {
       return {
-        error: "Tidak ada data mutasi untuk jenis laporan ini. Pastikan sudah ada data mutasi di database.",
+        error:
+          "Tidak ada data mutasi untuk jenis laporan ini. Pastikan sudah ada data mutasi di database.",
       };
     }
 
@@ -344,7 +346,8 @@ export async function generateReportSurat(jenis: string) {
     // Check if data is empty
     if (!suratData || suratData.length === 0) {
       return {
-        error: "Tidak ada data surat untuk jenis laporan ini. Pastikan sudah ada data surat keluar di database.",
+        error:
+          "Tidak ada data surat untuk jenis laporan ini. Pastikan sudah ada data surat keluar di database.",
       };
     }
 
@@ -485,7 +488,8 @@ export async function generateReportStatistik(jenis: string) {
     // Check if data is empty
     if (!statsData || statsData.length === 0) {
       return {
-        error: "Tidak ada data statistik untuk jenis laporan ini. Pastikan sudah ada data di database.",
+        error:
+          "Tidak ada data statistik untuk jenis laporan ini. Pastikan sudah ada data di database.",
       };
     }
 

@@ -75,10 +75,13 @@ export default async function PendudukPage({
   const totalPages = Math.max(1, result.totalPages ?? 1);
   const fetchError = result.error;
 
-  // Check permissions
-  const canCreatePenduduk = await canCreate("penduduk");
-  const canUpdatePenduduk = await canUpdate("penduduk");
-  const canDeletePenduduk = await canDelete("penduduk");
+  // Check permissions in parallel
+  const [canCreatePenduduk, canUpdatePenduduk, canDeletePenduduk] =
+    await Promise.all([
+      canCreate("penduduk"),
+      canUpdate("penduduk"),
+      canDelete("penduduk"),
+    ]);
 
   // Jika ada error, tampilkan di console untuk debugging
   if (fetchError) {
