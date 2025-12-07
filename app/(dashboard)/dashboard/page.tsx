@@ -37,9 +37,16 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  // Get dashboard statistics
-  const statsResult = await getDashboardStats();
-  const stats = statsResult.data || {
+  // Get dashboard statistics with error handling
+  let statsResult;
+  try {
+    statsResult = await getDashboardStats();
+  } catch (error) {
+    console.error("Error fetching dashboard stats:", error);
+    statsResult = { error: "Failed to load statistics" };
+  }
+
+  const stats = statsResult?.data || {
     totalPenduduk: 0,
     totalPendudukAll: 0,
     totalPendudukMati: 0,
