@@ -45,7 +45,7 @@ export function parseCSVFile(file: File): Promise<any[]> {
     reader.onload = (e) => {
       try {
         const text = e.target?.result as string;
-        
+
         if (!text || text.trim().length === 0) {
           resolve([]);
           return;
@@ -55,22 +55,22 @@ export function parseCSVFile(file: File): Promise<any[]> {
         const lines: string[] = [];
         let currentLine = "";
         let inQuotes = false;
-        
+
         for (let i = 0; i < text.length; i++) {
           const char = text[i];
           const nextChar = text[i + 1];
-          
+
           if (char === '"') {
             inQuotes = !inQuotes;
             currentLine += char;
-          } else if (char === '\n' && !inQuotes) {
+          } else if (char === "\n" && !inQuotes) {
             lines.push(currentLine);
             currentLine = "";
           } else {
             currentLine += char;
           }
         }
-        
+
         if (currentLine.trim()) {
           lines.push(currentLine);
         }
@@ -87,13 +87,13 @@ export function parseCSVFile(file: File): Promise<any[]> {
           const values: string[] = [];
           let current = "";
           let inQuotes = false;
-          
+
           for (let i = 0; i < line.length; i++) {
             const char = line[i];
-            
+
             if (char === '"') {
               inQuotes = !inQuotes;
-            } else if (char === ',' && !inQuotes) {
+            } else if (char === "," && !inQuotes) {
               values.push(current.trim());
               current = "";
             } else {
@@ -104,13 +104,13 @@ export function parseCSVFile(file: File): Promise<any[]> {
           return values;
         };
 
-        const headers = parseCSVLine(filteredLines[0]).map((h) => 
+        const headers = parseCSVLine(filteredLines[0]).map((h) =>
           h.replace(/^"|"$/g, "").trim()
         );
 
         // Parse data rows
         const data = filteredLines.slice(1).map((line) => {
-          const values = parseCSVLine(line).map((v) => 
+          const values = parseCSVLine(line).map((v) =>
             v.replace(/^"|"$/g, "").trim()
           );
           const row: any = {};

@@ -331,7 +331,10 @@ export async function importKartuKeluarga(data: any[]) {
 
   const errors: string[] = [];
   let success = 0;
+  const batchSize = 50;
+  const validData: any[] = [];
 
+  // Step 1: Validate and prepare all data
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     try {
@@ -350,33 +353,50 @@ export async function importKartuKeluarga(data: any[]) {
 
       // Validate
       const validatedData = createKartuKeluargaSchema.parse(kkData);
-
-      // Check nomor_kk duplicate
-      const { data: existing } = await supabase
-        .from("kartu_keluarga")
-        .select("id")
-        .eq("nomor_kk", validatedData.nomor_kk)
-        .single();
-
-      if (existing) {
-        errors.push(
-          `Baris ${i + 2}: Nomor KK ${validatedData.nomor_kk} sudah terdaftar`
-        );
-        continue;
-      }
-
-      // Insert
-      const { error } = await supabase
-        .from("kartu_keluarga")
-        .insert(validatedData as Record<string, any>);
-
-      if (error) {
-        errors.push(`Baris ${i + 2}: ${error.message}`);
-      } else {
-        success++;
-      }
+      validData.push({ ...validatedData, _rowIndex: i + 2 });
     } catch (error: any) {
       errors.push(`Baris ${i + 2}: ${error.message || "Data tidak valid"}`);
+    }
+  }
+
+  // Step 2: Get all existing nomor_kk untuk check duplicate (batch query)
+  if (validData.length > 0) {
+    const allNomorKK = validData.map((d) => d.nomor_kk);
+    const { data: existingKK } = await supabase
+      .from("kartu_keluarga")
+      .select("nomor_kk")
+      .in("nomor_kk", allNomorKK);
+
+    const existingSet = new Set((existingKK || []).map((kk) => kk.nomor_kk));
+
+    // Step 3: Filter out duplicates
+    const toInsert = validData.filter((data) => {
+      if (existingSet.has(data.nomor_kk)) {
+        errors.push(
+          `Baris ${data._rowIndex}: Nomor KK ${data.nomor_kk} sudah terdaftar`
+        );
+        return false;
+      }
+      existingSet.add(data.nomor_kk);
+      return true;
+    });
+
+    // Step 4: Batch insert
+    for (let i = 0; i < toInsert.length; i += batchSize) {
+      const batch = toInsert.slice(i, i + batchSize);
+      const insertData = batch.map(({ _rowIndex, ...data }) => data);
+
+      const { error } = await supabase
+        .from("kartu_keluarga")
+        .insert(insertData as Record<string, any>[]);
+
+      if (error) {
+        batch.forEach((item) => {
+          errors.push(`Baris ${item._rowIndex}: ${error.message}`);
+        });
+      } else {
+        success += batch.length;
+      }
     }
   }
 

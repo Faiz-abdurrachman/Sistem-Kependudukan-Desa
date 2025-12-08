@@ -27,6 +27,8 @@ import {
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { ExportButton } from "@/components/export-button";
+import { ImportButton } from "@/components/import-button";
+import { importSuratKeluar } from "@/app/actions/surat-keluar";
 
 interface SearchParams {
   page?: string | string[];
@@ -85,6 +87,10 @@ export default async function SuratKeluarPage({
           </p>
         </div>
         <div className="flex gap-3">
+          <ImportButton
+            onImport={importSuratKeluar}
+            label="Import Surat Keluar"
+          />
           <ExportButton
             data={suratList.map((s: any) => ({
               "Nomor Surat": s.nomor_surat,

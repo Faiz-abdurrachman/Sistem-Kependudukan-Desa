@@ -270,3 +270,96 @@ export async function getMutasiById(id: string) {
     error: null,
   };
 }
+
+/**
+ * Import Mutasi dari Excel/CSV
+ */
+export async function importMutasi(data: any[]) {
+  const supabase = await createClient();
+
+  // Check authentication
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: 0, errors: ["Unauthorized"] };
+  }
+
+  const errors: string[] = [];
+  let success = 0;
+  const batchSize = 50;
+  const validData: any[] = [];
+
+  // Step 1: Validate and prepare all data
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    try {
+      // Map column names (flexible)
+      const mutasiData: any = {
+        penduduk_id:
+          row["penduduk_id"] ||
+          row["Penduduk ID"] ||
+          row["ID Penduduk"],
+        jenis_mutasi:
+          row["jenis_mutasi"] ||
+          row["Jenis Mutasi"] ||
+          row["Jenis"],
+        tanggal_peristiwa:
+          row["tanggal_peristiwa"] ||
+          row["Tanggal Peristiwa"] ||
+          row["Tanggal"],
+        keterangan: row["keterangan"] || row["Keterangan"] || null,
+      };
+
+      // Convert tanggal ke format YYYY-MM-DD
+      if (mutasiData.tanggal_peristiwa) {
+        if (typeof mutasiData.tanggal_peristiwa === "string") {
+          // Jika sudah format YYYY-MM-DD, gunakan langsung
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(mutasiData.tanggal_peristiwa)) {
+            // Convert dari Date object atau format lain
+            const date = new Date(mutasiData.tanggal_peristiwa);
+            mutasiData.tanggal_peristiwa =
+              date.toISOString().split("T")[0];
+          }
+        } else if (mutasiData.tanggal_peristiwa instanceof Date) {
+          mutasiData.tanggal_peristiwa =
+            mutasiData.tanggal_peristiwa.toISOString().split("T")[0];
+        }
+      }
+
+      // Validate
+      const validatedData = createMutasiSchema.parse(mutasiData);
+      validData.push({ ...validatedData, _rowIndex: i + 2 });
+    } catch (error: any) {
+      errors.push(`Baris ${i + 2}: ${error.message || "Data tidak valid"}`);
+    }
+  }
+
+  // Step 2: Batch insert
+  for (let i = 0; i < validData.length; i += batchSize) {
+    const batch = validData.slice(i, i + batchSize);
+    const insertData = batch.map(({ _rowIndex, ...data }) => ({
+      ...data,
+      created_by: user.id,
+      // tanggal_peristiwa sudah dalam format string YYYY-MM-DD dari validation
+    }));
+
+    const { error } = await supabase
+      .from("mutasi_log")
+      .insert(insertData as Record<string, any>[]);
+
+    if (error) {
+      batch.forEach((item) => {
+        errors.push(`Baris ${item._rowIndex}: ${error.message}`);
+      });
+    } else {
+      success += batch.length;
+    }
+  }
+
+  if (success > 0) {
+    revalidatePath("/mutasi");
+  }
+
+  return { success, errors };
+}

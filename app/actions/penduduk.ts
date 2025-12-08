@@ -350,9 +350,7 @@ export async function importPenduduk(data: any[]) {
       .select("nik")
       .in("nik", allNIKs);
 
-    const existingNIKs = new Set(
-      (existingPenduduk || []).map((p) => p.nik)
-    );
+    const existingNIKs = new Set((existingPenduduk || []).map((p) => p.nik));
 
     // Step 3: Filter out duplicates
     const toInsert = validData.filter((data) => {

@@ -20,6 +20,8 @@ import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
 import { ExportButton } from "@/components/export-button";
+import { ImportButton } from "@/components/import-button";
+import { importKartuKeluarga } from "@/app/actions/kartu-keluarga";
 
 interface SearchParams {
   page?: string | string[];
@@ -76,6 +78,10 @@ export default async function KartuKeluargaPage({
           </p>
         </div>
         <div className="flex gap-3">
+          <ImportButton
+            onImport={importKartuKeluarga}
+            label="Import Kartu Keluarga"
+          />
           <ExportButton
             data={kkList.map((kk: any) => ({
               "Nomor KK": kk.nomor_kk,

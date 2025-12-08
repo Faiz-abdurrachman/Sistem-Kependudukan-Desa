@@ -27,6 +27,8 @@ import {
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { ExportButton } from "@/components/export-button";
+import { ImportButton } from "@/components/import-button";
+import { importMutasi } from "@/app/actions/mutasi";
 
 interface SearchParams {
   page?: string | string[];
@@ -96,6 +98,7 @@ export default async function MutasiPage({
           </p>
         </div>
         <div className="flex gap-3">
+          <ImportButton onImport={importMutasi} label="Import Mutasi" />
           <ExportButton
             data={mutasiList.map((m: any) => ({
               Tanggal: format(new Date(m.tanggal_peristiwa), "dd/MM/yyyy", {
