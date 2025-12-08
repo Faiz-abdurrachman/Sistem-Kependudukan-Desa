@@ -68,10 +68,28 @@ export function ImportButton({
       }
 
       if (result.errors.length > 0) {
-        console.error("Import errors:", result.errors);
-        // Log first 10 errors untuk debugging
-        const errorPreview = result.errors.slice(0, 10);
-        console.error("Error preview (first 10):", errorPreview);
+        // Log errors dengan format yang lebih baik
+        console.group("📋 Import Errors");
+        console.log(`Total errors: ${result.errors.length}`);
+        
+        // Group errors by type untuk analisis yang lebih baik
+        const errorGroups: { [key: string]: number } = {};
+        result.errors.forEach((err) => {
+          const errorType = err.split(":")[1]?.trim() || "Unknown";
+          errorGroups[errorType] = (errorGroups[errorType] || 0) + 1;
+        });
+        
+        console.log("Error summary:", errorGroups);
+        
+        // Log first 20 errors untuk debugging (bukan hanya 10)
+        const errorPreview = result.errors.slice(0, 20);
+        console.log("First 20 errors:", errorPreview);
+        
+        // Jika ada lebih dari 20 errors, tampilkan info
+        if (result.errors.length > 20) {
+          console.log(`... and ${result.errors.length - 20} more errors`);
+        }
+        console.groupEnd();
       }
 
       // Reset file input

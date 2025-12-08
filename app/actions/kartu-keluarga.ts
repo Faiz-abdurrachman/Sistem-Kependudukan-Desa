@@ -335,10 +335,15 @@ export async function importKartuKeluarga(data: any[]) {
   const validData: any[] = [];
 
   // Step 0: Get all wilayah untuk mapping wilayah_id
-  const { data: allWilayah } = await supabase
+  const { data: allWilayah, error: wilayahError } = await supabase
     .from("wilayah")
     .select("id")
     .order("created_at", { ascending: true }); // Order by created_at untuk konsistensi
+
+  if (wilayahError) {
+    errors.push(`Gagal memuat data wilayah: ${wilayahError.message}`);
+    return { success: 0, errors };
+  }
 
   // Create mapping dari index ke UUID (untuk format "wilayah-1", "wilayah-2", dll)
   const wilayahMap = new Map<string, string>();
@@ -349,6 +354,9 @@ export async function importKartuKeluarga(data: any[]) {
       // Juga map langsung dengan UUID jika sudah UUID
       wilayahMap.set(w.id, w.id);
     });
+  } else {
+    errors.push("Tidak ada data wilayah. Pastikan wilayah sudah diimport terlebih dahulu.");
+    return { success: 0, errors };
   }
 
   // Step 1: Validate and prepare all data
@@ -412,7 +420,7 @@ export async function importKartuKeluarga(data: any[]) {
         "kk_id", // Alias untuk kepala_keluarga_id
         "KK ID",
       ]);
-      
+
       // Validate kepala_keluarga_id - must be UUID or null/empty
       if (kepalaKeluargaIdValue) {
         const kepalaKeluargaIdStr = String(kepalaKeluargaIdValue).trim();
@@ -421,7 +429,7 @@ export async function importKartuKeluarga(data: any[]) {
           /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
             kepalaKeluargaIdStr
           );
-        
+
         if (!isUUID) {
           // Jika bukan UUID dan bukan empty, set to null
           kepalaKeluargaIdValue = null;
@@ -446,10 +454,29 @@ export async function importKartuKeluarga(data: any[]) {
         fotoScanUrl = null;
       }
 
+      // Get nomor_kk dan normalize
+      let nomorKKValue = getValue(["nomor_kk", "Nomor KK", "No KK", "nomor_kk"]);
+      if (!nomorKKValue) {
+        throw new Error("nomor_kk wajib diisi");
+      }
+      
+      // Convert to string and remove any non-digit characters
+      let nomorKKStr = String(nomorKKValue).replace(/\D/g, "");
+      
+      // Pad to 16 digits if needed
+      if (nomorKKStr.length < 16) {
+        nomorKKStr = nomorKKStr.padStart(16, "0");
+      } else if (nomorKKStr.length > 16) {
+        // If longer than 16, take first 16 digits
+        nomorKKStr = nomorKKStr.substring(0, 16);
+      }
+      
+      if (nomorKKStr.length !== 16) {
+        throw new Error(`nomor_kk harus 16 digit (ditemukan: ${nomorKKStr.length} digit)`);
+      }
+
       const kkData: any = {
-        nomor_kk: String(
-          getValue(["nomor_kk", "Nomor KK", "No KK", "nomor_kk"]) || ""
-        ).padStart(16, "0"),
+        nomor_kk: nomorKKStr,
         wilayah_id: wilayahIdValue,
         alamat_lengkap: getValue([
           "alamat_lengkap",
@@ -462,8 +489,8 @@ export async function importKartuKeluarga(data: any[]) {
       };
 
       // Check required fields
-      if (!kkData.nomor_kk || kkData.nomor_kk.length !== 16) {
-        throw new Error("nomor_kk harus 16 digit");
+      if (!kkData.wilayah_id) {
+        throw new Error("wilayah_id wajib diisi");
       }
       if (!kkData.wilayah_id) {
         throw new Error("wilayah_id wajib diisi");
@@ -487,16 +514,29 @@ export async function importKartuKeluarga(data: any[]) {
         if (validationError.errors && Array.isArray(validationError.errors)) {
           const errorMessages = validationError.errors.map((err: any) => {
             const field = err.path?.join(".") || "unknown";
-            return `${field}: ${err.message}`;
+            // Map field names untuk user-friendly messages
+            const fieldNames: { [key: string]: string } = {
+              nomor_kk: "Nomor KK",
+              wilayah_id: "Wilayah ID",
+              kepala_keluarga_id: "Kepala Keluarga ID",
+              alamat_lengkap: "Alamat Lengkap",
+              foto_scan_url: "Foto Scan URL",
+            };
+            const fieldName = fieldNames[field] || field;
+            return `${fieldName}: ${err.message}`;
           });
-          throw new Error(errorMessages.join(", "));
+          throw new Error(errorMessages.join("; "));
         }
         throw validationError;
       }
     } catch (error: any) {
       // Format error message dengan lebih jelas
       const errorMsg = error.message || "Data tidak valid";
-      errors.push(`Baris ${i + 2}: ${errorMsg}`);
+      // Hanya tambahkan error jika belum ada (untuk mengurangi duplikasi)
+      const errorKey = `Baris ${i + 2}: ${errorMsg}`;
+      if (!errors.includes(errorKey)) {
+        errors.push(errorKey);
+      }
     }
   }
 
@@ -532,9 +572,10 @@ export async function importKartuKeluarga(data: any[]) {
         .insert(insertData as Record<string, any>[]);
 
       if (error) {
-        batch.forEach((item) => {
-          errors.push(`Baris ${item._rowIndex}: ${error.message}`);
-        });
+        // Group errors by message untuk mengurangi duplikasi
+        const errorMessage = error.message || "Gagal menyimpan data";
+        const affectedRows = batch.map((item) => item._rowIndex).join(", ");
+        errors.push(`Baris ${affectedRows}: ${errorMessage}`);
       } else {
         success += batch.length;
       }
