@@ -71,23 +71,50 @@ export function ImportButton({
         // Log errors dengan format yang lebih baik
         console.group("📋 Import Errors");
         console.log(`Total errors: ${result.errors.length}`);
-        
+
         // Group errors by type untuk analisis yang lebih baik
         const errorGroups: { [key: string]: number } = {};
         result.errors.forEach((err) => {
-          const errorType = err.split(":")[1]?.trim() || "Unknown";
-          errorGroups[errorType] = (errorGroups[errorType] || 0) + 1;
+          // Format error: "Baris X: error message" atau "error message"
+          // Extract error message (setelah "Baris X: " atau langsung error message)
+          let errorMessage = err;
+          if (err.includes(":")) {
+            // Ambil bagian setelah "Baris X: "
+            const parts = err.split(":");
+            if (parts.length > 1) {
+              // Skip "Baris X" dan ambil error message
+              errorMessage = parts.slice(1).join(":").trim();
+            }
+          }
+          
+          // Normalize error message (remove specific values untuk grouping)
+          const normalizedError = errorMessage
+            .replace(/\d+/g, "N") // Replace numbers with N
+            .replace(/["']/g, "") // Remove quotes
+            .trim();
+          
+          errorGroups[normalizedError] = (errorGroups[normalizedError] || 0) + 1;
         });
-        
+
         console.log("Error summary:", errorGroups);
         
-        // Log first 20 errors untuk debugging (bukan hanya 10)
+        // Tampilkan error yang paling sering terjadi
+        const sortedErrors = Object.entries(errorGroups)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10);
+        console.log("Top 10 most common errors:", sortedErrors);
+
+        // Log first 20 errors untuk debugging dengan format yang lebih baik
+        console.log("\n📝 First 20 detailed errors:");
         const errorPreview = result.errors.slice(0, 20);
-        console.log("First 20 errors:", errorPreview);
+        errorPreview.forEach((err, idx) => {
+          console.log(`${idx + 1}. ${err}`);
+        });
         
         // Jika ada lebih dari 20 errors, tampilkan info
         if (result.errors.length > 20) {
-          console.log(`... and ${result.errors.length - 20} more errors`);
+          console.log(`\n... and ${result.errors.length - 20} more errors`);
+          console.log(`\n💡 Tip: Perbaiki error yang paling umum terlebih dahulu untuk mengurangi jumlah error.`);
         }
         console.groupEnd();
       }

@@ -355,7 +355,9 @@ export async function importKartuKeluarga(data: any[]) {
       wilayahMap.set(w.id, w.id);
     });
   } else {
-    errors.push("Tidak ada data wilayah. Pastikan wilayah sudah diimport terlebih dahulu.");
+    errors.push(
+      "Tidak ada data wilayah. Pastikan wilayah sudah diimport terlebih dahulu."
+    );
     return { success: 0, errors };
   }
 
@@ -455,14 +457,19 @@ export async function importKartuKeluarga(data: any[]) {
       }
 
       // Get nomor_kk dan normalize
-      let nomorKKValue = getValue(["nomor_kk", "Nomor KK", "No KK", "nomor_kk"]);
+      let nomorKKValue = getValue([
+        "nomor_kk",
+        "Nomor KK",
+        "No KK",
+        "nomor_kk",
+      ]);
       if (!nomorKKValue) {
         throw new Error("nomor_kk wajib diisi");
       }
-      
+
       // Convert to string and remove any non-digit characters
       let nomorKKStr = String(nomorKKValue).replace(/\D/g, "");
-      
+
       // Pad to 16 digits if needed
       if (nomorKKStr.length < 16) {
         nomorKKStr = nomorKKStr.padStart(16, "0");
@@ -470,9 +477,11 @@ export async function importKartuKeluarga(data: any[]) {
         // If longer than 16, take first 16 digits
         nomorKKStr = nomorKKStr.substring(0, 16);
       }
-      
+
       if (nomorKKStr.length !== 16) {
-        throw new Error(`nomor_kk harus 16 digit (ditemukan: ${nomorKKStr.length} digit)`);
+        throw new Error(
+          `nomor_kk harus 16 digit (ditemukan: ${nomorKKStr.length} digit)`
+        );
       }
 
       const kkData: any = {
@@ -489,9 +498,6 @@ export async function importKartuKeluarga(data: any[]) {
       };
 
       // Check required fields
-      if (!kkData.wilayah_id) {
-        throw new Error("wilayah_id wajib diisi");
-      }
       if (!kkData.wilayah_id) {
         throw new Error("wilayah_id wajib diisi");
       }
