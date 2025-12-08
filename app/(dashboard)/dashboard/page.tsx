@@ -94,7 +94,10 @@ export default async function DashboardPage() {
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Selamat Datang</h1>
           <p className="text-slate-200 font-medium">
-            Halo, <span className="font-semibold text-white">{user?.email || "User"}</span>
+            Halo,{" "}
+            <span className="font-semibold text-white">
+              {user?.email || "User"}
+            </span>
           </p>
         </div>
         <div className="text-right">

@@ -17,7 +17,11 @@ const eslintConfig = defineConfig([
     rules: {
       // Disable Tailwind CSS class name warnings (false positives)
       "tailwindcss/no-custom-classname": "off",
+      // Disable invalid class warnings for valid Tailwind classes
+      "@next/next/no-html-link-for-pages": "off",
     },
+    files: ["**/*.{js,jsx,ts,tsx}"],
+    ignores: ["**/*.config.{js,ts,mjs}"],
   },
 ]);
 

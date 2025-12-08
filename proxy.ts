@@ -76,6 +76,11 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
+  // Get user untuk protected routes dan login page
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   // Redirect ke login jika belum login dan mengakses protected route
   if (isProtectedPath && !user) {
     const redirectUrl = new URL("/login", request.url);
