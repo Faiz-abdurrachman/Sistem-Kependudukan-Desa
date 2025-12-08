@@ -361,6 +361,34 @@ export async function importKartuKeluarga(data: any[]) {
     return { success: 0, errors };
   }
 
+  // Step 0.5: Validate file structure - check if this is actually a Kartu Keluarga file
+  if (data.length > 0) {
+    const firstRow = data[0];
+    const hasNomorKK = 
+      firstRow["nomor_kk"] !== undefined || 
+      firstRow["Nomor KK"] !== undefined ||
+      firstRow["No KK"] !== undefined;
+    const hasNamaLengkap = 
+      firstRow["nama_lengkap"] !== undefined || 
+      firstRow["Nama Lengkap"] !== undefined;
+    
+    // If file has nama_lengkap but no nomor_kk, it's probably a Penduduk file
+    if (hasNamaLengkap && !hasNomorKK) {
+      errors.push(
+        "File yang diimport sepertinya bukan file Kartu Keluarga. File ini memiliki kolom 'nama_lengkap' yang merupakan field untuk Penduduk. Pastikan Anda mengimport file yang benar."
+      );
+      return { success: 0, errors };
+    }
+    
+    // If file doesn't have nomor_kk, it's probably wrong file
+    if (!hasNomorKK) {
+      errors.push(
+        "File yang diimport tidak memiliki kolom 'nomor_kk' yang merupakan field wajib untuk Kartu Keluarga. Pastikan format file benar."
+      );
+      return { success: 0, errors };
+    }
+  }
+
   // Step 1: Validate and prepare all data
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
@@ -558,7 +586,10 @@ export async function importKartuKeluarga(data: any[]) {
       try {
         // Debug: Log kkData sebelum validation (hanya di development)
         if (process.env.NODE_ENV === "development" && i < 2) {
-          console.log(`[DEBUG] kkData before validation (row ${i + 2}):`, Object.keys(kkData));
+          console.log(
+            `[DEBUG] kkData before validation (row ${i + 2}):`,
+            Object.keys(kkData)
+          );
         }
 
         // Parse dengan schema yang sudah menggunakan .strip()
