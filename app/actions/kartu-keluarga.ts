@@ -423,7 +423,7 @@ export async function importKartuKeluarga(data: any[]) {
         "kk_id", // Alias untuk kepala_keluarga_id (from CSV)
         "KK ID",
       ]);
-      
+
       // Also check if there's a direct 'kk_id' column that we should ignore
       // (kk_id in CSV should map to kepala_keluarga_id, not be a separate field)
 
@@ -490,6 +490,15 @@ export async function importKartuKeluarga(data: any[]) {
 
       // Build kkData object - hanya field yang valid untuk schema
       // Pastikan tidak ada field tambahan yang tidak valid (seperti kk_id, tgl_lahir, dll)
+      // List of valid fields untuk Kartu Keluarga schema
+      const validFields = [
+        "nomor_kk",
+        "wilayah_id",
+        "alamat_lengkap",
+        "kepala_keluarga_id",
+        "foto_scan_url",
+      ];
+
       const kkData: Record<string, any> = {
         nomor_kk: nomorKKStr,
         wilayah_id: wilayahIdValue,
@@ -507,12 +516,24 @@ export async function importKartuKeluarga(data: any[]) {
       }
 
       // Only add foto_scan_url if it has a valid value (not null or empty)
-      if (fotoScanUrl !== null && fotoScanUrl !== undefined && fotoScanUrl !== "") {
+      if (
+        fotoScanUrl !== null &&
+        fotoScanUrl !== undefined &&
+        fotoScanUrl !== ""
+      ) {
         kkData.foto_scan_url = fotoScanUrl;
       }
-      
+
       // Explicitly remove any invalid fields that might have been parsed from CSV
-      // (like kk_id, tgl_lahir, or other fields not in the schema)
+      // (like kk_id, tgl_lahir, id, or other fields not in the schema)
+      // Also remove any fields from row that are not in validFields list
+      Object.keys(kkData).forEach((key) => {
+        if (!validFields.includes(key)) {
+          delete kkData[key];
+        }
+      });
+
+      // Double check - remove known invalid fields
       delete kkData.kk_id;
       delete kkData.id;
       delete kkData.tgl_lahir;
@@ -533,53 +554,68 @@ export async function importKartuKeluarga(data: any[]) {
       }
 
       // Validate dengan better error handling
-      // Use .passthrough() untuk ignore unknown fields, tapi kita sudah filter manual
+      // Schema sudah menggunakan .strip() untuk remove unknown fields
       try {
-        // Parse dengan strict mode untuk memastikan hanya field yang valid
+        // Debug: Log kkData sebelum validation (hanya di development)
+        if (process.env.NODE_ENV === "development" && i < 2) {
+          console.log(`[DEBUG] kkData before validation (row ${i + 2}):`, Object.keys(kkData));
+        }
+
+        // Parse dengan schema yang sudah menggunakan .strip()
         const validatedData = createKartuKeluargaSchema.parse(kkData);
         validData.push({ ...validatedData, _rowIndex: i + 2 });
       } catch (validationError: any) {
         // Handle Zod validation errors dengan lebih detail
         if (validationError.errors && Array.isArray(validationError.errors)) {
-          const errorMessages = validationError.errors.map((err: any) => {
-            const field = err.path?.join(".") || "unknown";
-            
-            // Map field names untuk user-friendly messages
-            const fieldNames: { [key: string]: string } = {
-              nomor_kk: "Nomor KK",
-              wilayah_id: "Wilayah ID",
-              kepala_keluarga_id: "Kepala Keluarga ID",
-              kk_id: "Kepala Keluarga ID", // Map kk_id to kepala_keluarga_id
-              alamat_lengkap: "Alamat Lengkap",
-              foto_scan_url: "Foto Scan URL",
-            };
-            
-            const fieldName = fieldNames[field] || field;
-            
-            // Filter out errors untuk field yang tidak relevan (seperti tgl_lahir untuk KK)
-            // atau field yang sudah kita hapus (seperti kk_id yang sudah di-map ke kepala_keluarga_id)
-            if (
-              field === "tgl_lahir" || 
-              field.includes("tgl_lahir") ||
-              field === "id" ||
-              (field === "kk_id" && err.message.includes("Kartu Keluarga"))
-            ) {
-              // Jika error kk_id dengan message "ID Kartu Keluarga tidak valid",
-              // ini berarti kepala_keluarga_id tidak valid, bukan kk_id
-              if (field === "kk_id" && err.message.includes("Kartu Keluarga")) {
-                return `Kepala Keluarga ID: ${err.message.replace("ID Kartu Keluarga", "ID Kepala Keluarga")}`;
+          const errorMessages = validationError.errors
+            .map((err: any) => {
+              const field = err.path?.join(".") || "unknown";
+
+              // Map field names untuk user-friendly messages
+              const fieldNames: { [key: string]: string } = {
+                nomor_kk: "Nomor KK",
+                wilayah_id: "Wilayah ID",
+                kepala_keluarga_id: "Kepala Keluarga ID",
+                kk_id: "Kepala Keluarga ID", // Map kk_id to kepala_keluarga_id
+                alamat_lengkap: "Alamat Lengkap",
+                foto_scan_url: "Foto Scan URL",
+              };
+
+              const fieldName = fieldNames[field] || field;
+
+              // Filter out errors untuk field yang tidak relevan (seperti tgl_lahir untuk KK)
+              // atau field yang sudah kita hapus (seperti kk_id yang sudah di-map ke kepala_keluarga_id)
+              if (
+                field === "tgl_lahir" ||
+                field.includes("tgl_lahir") ||
+                field === "id" ||
+                (field === "kk_id" && err.message.includes("Kartu Keluarga"))
+              ) {
+                // Jika error kk_id dengan message "ID Kartu Keluarga tidak valid",
+                // ini berarti kepala_keluarga_id tidak valid, bukan kk_id
+                if (
+                  field === "kk_id" &&
+                  err.message.includes("Kartu Keluarga")
+                ) {
+                  return `Kepala Keluarga ID: ${err.message.replace(
+                    "ID Kartu Keluarga",
+                    "ID Kepala Keluarga"
+                  )}`;
+                }
+                return null; // Ignore field yang tidak relevan
               }
-              return null; // Ignore field yang tidak relevan
-            }
-            
-            return `${fieldName}: ${err.message}`;
-          }).filter((msg) => msg !== null); // Remove null messages
-          
+
+              return `${fieldName}: ${err.message}`;
+            })
+            .filter((msg) => msg !== null); // Remove null messages
+
           if (errorMessages.length > 0) {
             throw new Error(errorMessages.join("; "));
           } else {
             // Jika semua error di-filter out, skip row ini
-            throw new Error("Data tidak valid (mengandung field yang tidak relevan)");
+            throw new Error(
+              "Data tidak valid (mengandung field yang tidak relevan)"
+            );
           }
         }
         throw validationError;

@@ -11,32 +11,35 @@ const nomorKKSchema = z
   .regex(/^[0-9]+$/, "Nomor KK harus berupa angka");
 
 // Schema untuk Create/Update Kartu Keluarga
-export const kartuKeluargaSchema = z.object({
-  nomor_kk: nomorKKSchema,
+// Use .strip() untuk remove unknown fields (seperti kk_id, tgl_lahir, dll)
+export const kartuKeluargaSchema = z
+  .object({
+    nomor_kk: nomorKKSchema,
 
-  kepala_keluarga_id: z
-    .string()
-    .uuid("ID Kepala Keluarga tidak valid")
-    .optional()
-    .nullable(),
+    kepala_keluarga_id: z
+      .string()
+      .uuid("ID Kepala Keluarga tidak valid")
+      .optional()
+      .nullable(),
 
-  alamat_lengkap: z
-    .string()
-    .min(10, "Alamat lengkap minimal 10 karakter")
-    .max(200, "Alamat lengkap maksimal 200 karakter"),
+    alamat_lengkap: z
+      .string()
+      .min(10, "Alamat lengkap minimal 10 karakter")
+      .max(200, "Alamat lengkap maksimal 200 karakter"),
 
-  wilayah_id: z.string().uuid("ID Wilayah tidak valid"),
+    wilayah_id: z.string().uuid("ID Wilayah tidak valid"),
 
-  foto_scan_url: z
-    .union([
-      z.string().url("URL foto scan tidak valid"),
-      z.string().length(0), // Allow empty string
-      z.null(),
-    ])
-    .optional()
-    .nullable()
-    .transform((val) => (val === "" ? null : val)), // Transform empty string to null
-});
+    foto_scan_url: z
+      .union([
+        z.string().url("URL foto scan tidak valid"),
+        z.string().length(0), // Allow empty string
+        z.null(),
+      ])
+      .optional()
+      .nullable()
+      .transform((val) => (val === "" ? null : val)), // Transform empty string to null
+  })
+  .strip(); // Strip unknown fields (remove fields not in schema)
 
 // Schema untuk Create (tanpa ID)
 export const createKartuKeluargaSchema = kartuKeluargaSchema;
