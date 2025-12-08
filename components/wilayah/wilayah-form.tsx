@@ -78,9 +78,8 @@ export function WilayahForm({
           : "Data wilayah berhasil diperbarui"
       );
 
-      // Redirect
+      // Redirect (revalidatePath sudah dipanggil di server action)
       router.push("/wilayah");
-      router.refresh();
     } catch (err: any) {
       setError(err.message || "Terjadi kesalahan");
       setIsSubmitting(false);

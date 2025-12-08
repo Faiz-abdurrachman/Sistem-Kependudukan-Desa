@@ -71,6 +71,18 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith(path)
   );
 
+  // Handle root path - redirect ke login atau dashboard
+  if (pathname === "/") {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    } else {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+  }
+
   // Skip auth check if not a protected path
   if (!isProtectedPath && pathname !== "/login") {
     return response;
@@ -90,7 +102,7 @@ export async function proxy(request: NextRequest) {
 
   // Redirect ke dashboard jika sudah login dan mengakses login page
   // Kecuali ada query parameter ?force=true untuk bypass redirect (untuk testing)
-  if (request.nextUrl.pathname === "/login" && user) {
+  if (pathname === "/login" && user) {
     const forceLogin = request.nextUrl.searchParams.get("force");
     if (forceLogin !== "true") {
       return NextResponse.redirect(new URL("/dashboard", request.url));

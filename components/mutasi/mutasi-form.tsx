@@ -99,9 +99,8 @@ export function MutasiForm({
           : "Data mutasi berhasil diperbarui"
       );
 
-      // Redirect
+      // Redirect (revalidatePath sudah dipanggil di server action)
       router.push("/mutasi");
-      router.refresh();
     } catch (err: any) {
       setError(err.message || "Terjadi kesalahan");
       setIsSubmitting(false);

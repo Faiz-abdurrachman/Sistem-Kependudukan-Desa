@@ -110,9 +110,8 @@ export function KKForm({
           : "Data kartu keluarga berhasil diperbarui"
       );
 
-      // Redirect
+      // Redirect (revalidatePath sudah dipanggil di server action)
       router.push("/kartu-keluarga");
-      router.refresh();
     } catch (err: any) {
       setError(err.message || "Terjadi kesalahan");
       setIsSubmitting(false);

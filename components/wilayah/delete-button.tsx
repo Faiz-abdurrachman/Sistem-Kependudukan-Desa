@@ -40,7 +40,8 @@ export function DeleteButton({ wilayahId }: DeleteButtonProps) {
       return;
     }
 
-    router.refresh();
+    // Revalidate dengan push ke halaman yang sama (revalidatePath sudah dipanggil di server action)
+    router.push("/wilayah");
   };
 
   return (
