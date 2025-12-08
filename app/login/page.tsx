@@ -131,10 +131,7 @@ function LoginForm() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 relative">
       {/* Loading Overlay */}
       {loading && (
-        <LoadingOverlay
-          fullScreen={true}
-          message="Sedang masuk..."
-        />
+        <LoadingOverlay fullScreen={true} message="Sedang masuk..." />
       )}
       <div className="w-full max-w-md">
         <Card className="shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
