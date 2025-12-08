@@ -44,7 +44,7 @@ export default async function PengaturanPage() {
       </div>
 
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 bg-slate-800 border-slate-700">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 bg-slate-800 border-slate-700 gap-1">
           <TabsTrigger
             value="profile"
             className="data-[state=active]:bg-slate-700 data-[state=active]:text-white"

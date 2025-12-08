@@ -100,7 +100,7 @@ export function SystemSettings() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-slate-400 mb-1">Provider</p>
               <p className="text-white font-semibold">Supabase (PostgreSQL)</p>
@@ -122,7 +122,7 @@ export function SystemSettings() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
             <div className="p-4 border border-slate-700 rounded-lg">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-white font-semibold">Export Data</h3>

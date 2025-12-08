@@ -313,15 +313,12 @@ export async function importSuratKeluar(data: any[]) {
       // Map column names (flexible)
       const suratData: any = {
         penduduk_id:
-          row["penduduk_id"] ||
-          row["Penduduk ID"] ||
-          row["ID Penduduk"],
+          row["penduduk_id"] || row["Penduduk ID"] || row["ID Penduduk"],
         jenis_surat: row["jenis_surat"] || row["Jenis Surat"] || row["Jenis"],
-        nomor_surat: row["nomor_surat"] || row["Nomor Surat"] || row["No Surat"],
+        nomor_surat:
+          row["nomor_surat"] || row["Nomor Surat"] || row["No Surat"],
         tanggal_cetak:
-          row["tanggal_cetak"] ||
-          row["Tanggal Cetak"] ||
-          row["Tanggal"],
+          row["tanggal_cetak"] || row["Tanggal Cetak"] || row["Tanggal"],
         keterangan: row["keterangan"] || row["Keterangan"] || null,
       };
 
@@ -335,8 +332,9 @@ export async function importSuratKeluar(data: any[]) {
             suratData.tanggal_cetak = date.toISOString().split("T")[0];
           }
         } else if (suratData.tanggal_cetak instanceof Date) {
-          suratData.tanggal_cetak =
-            suratData.tanggal_cetak.toISOString().split("T")[0];
+          suratData.tanggal_cetak = suratData.tanggal_cetak
+            .toISOString()
+            .split("T")[0];
         }
       }
 

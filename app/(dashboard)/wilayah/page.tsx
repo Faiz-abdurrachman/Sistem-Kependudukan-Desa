@@ -141,15 +141,21 @@ export default async function WilayahPage({
             </div>
           ) : (
             <>
-              <div className="rounded-md border border-slate-700">
+              <div className="rounded-md border border-slate-700 overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="text-white">Dusun</TableHead>
-                      <TableHead className="text-white">RW</TableHead>
+                      <TableHead className="text-white hidden sm:table-cell">
+                        RW
+                      </TableHead>
                       <TableHead className="text-white">RT</TableHead>
-                      <TableHead className="text-white">Desa</TableHead>
-                      <TableHead className="text-white">Kecamatan</TableHead>
+                      <TableHead className="text-white hidden md:table-cell">
+                        Desa
+                      </TableHead>
+                      <TableHead className="text-white hidden lg:table-cell">
+                        Kecamatan
+                      </TableHead>
                       <TableHead className="text-white">Aksi</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -159,16 +165,16 @@ export default async function WilayahPage({
                         <TableCell className="font-medium text-white">
                           {wilayah.dusun}
                         </TableCell>
-                        <TableCell className="text-slate-300">
+                        <TableCell className="text-slate-300 hidden sm:table-cell">
                           {wilayah.rw || "-"}
                         </TableCell>
                         <TableCell className="text-slate-300">
                           {wilayah.rt || "-"}
                         </TableCell>
-                        <TableCell className="text-slate-300">
+                        <TableCell className="text-slate-300 hidden md:table-cell">
                           {wilayah.nama_desa || "-"}
                         </TableCell>
-                        <TableCell className="text-slate-300">
+                        <TableCell className="text-slate-300 hidden lg:table-cell">
                           {wilayah.nama_kecamatan || "-"}
                         </TableCell>
                         <TableCell>

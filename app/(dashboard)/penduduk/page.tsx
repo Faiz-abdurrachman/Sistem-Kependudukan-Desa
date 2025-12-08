@@ -174,19 +174,21 @@ export default async function PendudukPage({
             </div>
           ) : (
             <>
-              <div className="rounded-md border border-slate-700">
+              <div className="rounded-md border border-slate-700 overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="text-white">NIK</TableHead>
                       <TableHead className="text-white">Nama Lengkap</TableHead>
-                      <TableHead className="text-white">
+                      <TableHead className="text-white hidden sm:table-cell">
                         Tempat/Tgl Lahir
                       </TableHead>
-                      <TableHead className="text-white">
+                      <TableHead className="text-white hidden md:table-cell">
                         Jenis Kelamin
                       </TableHead>
-                      <TableHead className="text-white">Status</TableHead>
+                      <TableHead className="text-white hidden lg:table-cell">
+                        Status
+                      </TableHead>
                       <TableHead className="text-white">Aksi</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -199,16 +201,16 @@ export default async function PendudukPage({
                         <TableCell className="text-white">
                           {penduduk.nama_lengkap}
                         </TableCell>
-                        <TableCell className="text-slate-300">
+                        <TableCell className="text-slate-300 hidden sm:table-cell">
                           {penduduk.tempat_lahir},{" "}
                           {format(new Date(penduduk.tgl_lahir), "dd MMM yyyy", {
                             locale: id,
                           })}
                         </TableCell>
-                        <TableCell className="text-slate-300">
+                        <TableCell className="text-slate-300 hidden md:table-cell">
                           {penduduk.jenis_kelamin}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden lg:table-cell">
                           <span
                             className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                               penduduk.status_dasar === "HIDUP"

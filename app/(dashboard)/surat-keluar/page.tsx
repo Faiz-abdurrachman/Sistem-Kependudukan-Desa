@@ -172,14 +172,16 @@ export default async function SuratKeluarPage({
             </div>
           ) : (
             <>
-              <div className="rounded-md border border-slate-700">
+              <div className="rounded-md border border-slate-700 overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="text-white">Nomor Surat</TableHead>
                       <TableHead className="text-white">Jenis</TableHead>
-                      <TableHead className="text-white">Penduduk</TableHead>
-                      <TableHead className="text-white">
+                      <TableHead className="text-white hidden sm:table-cell">
+                        Penduduk
+                      </TableHead>
+                      <TableHead className="text-white hidden md:table-cell">
                         Tanggal Cetak
                       </TableHead>
                       <TableHead className="text-white">Aksi</TableHead>
@@ -196,12 +198,12 @@ export default async function SuratKeluarPage({
                           <TableCell className="text-white">
                             {surat.jenis_surat}
                           </TableCell>
-                          <TableCell className="text-white">
+                          <TableCell className="text-white hidden sm:table-cell">
                             {penduduk
                               ? `${penduduk.nik} - ${penduduk.nama_lengkap}`
                               : "-"}
                           </TableCell>
-                          <TableCell className="text-slate-300">
+                          <TableCell className="text-slate-300 hidden md:table-cell">
                             {format(
                               new Date(surat.tanggal_cetak),
                               "dd MMM yyyy",

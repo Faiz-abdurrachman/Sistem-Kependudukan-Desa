@@ -89,29 +89,31 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Welcome Section */}
-      <div className="flex items-center justify-between">
+      {/* Welcome Section - Responsive */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Selamat Datang</h1>
-          <p className="text-slate-200 font-medium">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+            Selamat Datang
+          </h1>
+          <p className="text-sm sm:text-base text-slate-200 font-medium">
             Halo,{" "}
             <span className="font-semibold text-white">
               {user?.email || "User"}
             </span>
           </p>
         </div>
-        <div className="text-right">
-          <p className="text-sm text-slate-400">
+        <div className="text-left sm:text-right">
+          <p className="text-xs sm:text-sm text-slate-400">
             {format(new Date(), "EEEE, dd MMMM yyyy", { locale: id })}
           </p>
-          <p className="text-sm text-slate-400">
+          <p className="text-xs sm:text-sm text-slate-400">
             {format(new Date(), "HH:mm", { locale: id })} WIB
           </p>
         </div>
       </div>
 
-      {/* Main Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      {/* Main Stats Cards - Responsive */}
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="border-l-4 border-l-blue-500 shadow-md hover:shadow-lg transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-semibold text-white">
@@ -213,8 +215,8 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* Secondary Stats */}
-      <div className="grid gap-6 md:grid-cols-3">
+      {/* Secondary Stats - Responsive */}
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
@@ -311,7 +313,7 @@ export default async function DashboardPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Link href="/penduduk/create">
               <Card className="hover:bg-slate-700/50 transition-colors cursor-pointer border-slate-700">
                 <CardContent className="p-4 text-center">

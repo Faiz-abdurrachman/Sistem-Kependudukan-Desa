@@ -208,12 +208,12 @@ export default async function MutasiPage({
                               {mutasi.jenis_mutasi.replace("_", " ")}
                             </span>
                           </TableCell>
-                          <TableCell className="text-white">
+                          <TableCell className="text-white hidden sm:table-cell">
                             {penduduk
                               ? `${penduduk.nik} - ${penduduk.nama_lengkap}`
                               : "-"}
                           </TableCell>
-                          <TableCell className="text-slate-300">
+                          <TableCell className="text-slate-300 hidden md:table-cell">
                             {mutasi.keterangan || "-"}
                           </TableCell>
                           <TableCell>

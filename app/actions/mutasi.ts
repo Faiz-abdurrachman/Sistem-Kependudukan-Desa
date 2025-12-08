@@ -297,13 +297,9 @@ export async function importMutasi(data: any[]) {
       // Map column names (flexible)
       const mutasiData: any = {
         penduduk_id:
-          row["penduduk_id"] ||
-          row["Penduduk ID"] ||
-          row["ID Penduduk"],
+          row["penduduk_id"] || row["Penduduk ID"] || row["ID Penduduk"],
         jenis_mutasi:
-          row["jenis_mutasi"] ||
-          row["Jenis Mutasi"] ||
-          row["Jenis"],
+          row["jenis_mutasi"] || row["Jenis Mutasi"] || row["Jenis"],
         tanggal_peristiwa:
           row["tanggal_peristiwa"] ||
           row["Tanggal Peristiwa"] ||
@@ -318,12 +314,12 @@ export async function importMutasi(data: any[]) {
           if (!/^\d{4}-\d{2}-\d{2}$/.test(mutasiData.tanggal_peristiwa)) {
             // Convert dari Date object atau format lain
             const date = new Date(mutasiData.tanggal_peristiwa);
-            mutasiData.tanggal_peristiwa =
-              date.toISOString().split("T")[0];
+            mutasiData.tanggal_peristiwa = date.toISOString().split("T")[0];
           }
         } else if (mutasiData.tanggal_peristiwa instanceof Date) {
-          mutasiData.tanggal_peristiwa =
-            mutasiData.tanggal_peristiwa.toISOString().split("T")[0];
+          mutasiData.tanggal_peristiwa = mutasiData.tanggal_peristiwa
+            .toISOString()
+            .split("T")[0];
         }
       }
 

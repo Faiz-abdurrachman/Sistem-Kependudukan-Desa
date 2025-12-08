@@ -160,16 +160,20 @@ export default async function KartuKeluargaPage({
             </div>
           ) : (
             <>
-              <div className="rounded-md border border-slate-700">
+              <div className="rounded-md border border-slate-700 overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="text-white">Nomor KK</TableHead>
-                      <TableHead className="text-white">
+                      <TableHead className="text-white hidden sm:table-cell">
                         Kepala Keluarga
                       </TableHead>
-                      <TableHead className="text-white">Alamat</TableHead>
-                      <TableHead className="text-white">Wilayah</TableHead>
+                      <TableHead className="text-white hidden md:table-cell">
+                        Alamat
+                      </TableHead>
+                      <TableHead className="text-white hidden lg:table-cell">
+                        Wilayah
+                      </TableHead>
                       <TableHead className="text-white">Aksi</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -188,15 +192,15 @@ export default async function KartuKeluargaPage({
                           <TableCell className="font-medium text-white">
                             {kk.nomor_kk}
                           </TableCell>
-                          <TableCell className="text-white">
+                          <TableCell className="text-white hidden sm:table-cell">
                             {kepalaKeluarga
                               ? `${kepalaKeluarga.nik} - ${kepalaKeluarga.nama_lengkap}`
                               : "-"}
                           </TableCell>
-                          <TableCell className="text-slate-300">
+                          <TableCell className="text-slate-300 hidden md:table-cell">
                             {kk.alamat_lengkap}
                           </TableCell>
-                          <TableCell className="text-slate-300">
+                          <TableCell className="text-slate-300 hidden lg:table-cell">
                             {wilayahLabel}
                           </TableCell>
                           <TableCell>
