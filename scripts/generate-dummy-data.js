@@ -373,17 +373,47 @@ function generateDummyData() {
   const suratSheet = XLSX.utils.json_to_sheet(suratData);
   XLSX.utils.book_append_sheet(workbook, suratSheet, "Surat Keluar");
 
-  // Write file
+  // Write Excel file
   const outputPath = path.join(__dirname, "../public/dummy-data.xlsx");
   XLSX.writeFile(workbook, outputPath);
 
-  console.log(`\n✅ File berhasil dibuat: ${outputPath}`);
+  // Also generate CSV files for easier access
+  const csvDir = path.join(__dirname, "../public/dummy-data-csv");
+  if (!fs.existsSync(csvDir)) {
+    fs.mkdirSync(csvDir, { recursive: true });
+  }
+
+  // Write CSV files
+  const wilayahCSV = XLSX.utils.sheet_to_csv(wilayahSheet);
+  fs.writeFileSync(path.join(csvDir, "wilayah.csv"), wilayahCSV);
+
+  const kkCSV = XLSX.utils.sheet_to_csv(kkSheet);
+  fs.writeFileSync(path.join(csvDir, "kartu-keluarga.csv"), kkCSV);
+
+  const pendudukCSV = XLSX.utils.sheet_to_csv(pendudukSheet);
+  fs.writeFileSync(path.join(csvDir, "penduduk.csv"), pendudukCSV);
+
+  const mutasiCSV = XLSX.utils.sheet_to_csv(mutasiSheet);
+  fs.writeFileSync(path.join(csvDir, "mutasi.csv"), mutasiCSV);
+
+  const suratCSV = XLSX.utils.sheet_to_csv(suratSheet);
+  fs.writeFileSync(path.join(csvDir, "surat-keluar.csv"), suratCSV);
+
+  console.log(`\n✅ File Excel berhasil dibuat: ${outputPath}`);
+  console.log(`✅ File CSV berhasil dibuat di: ${csvDir}`);
   console.log("\n📋 Summary:");
   console.log(`   - Wilayah: ${wilayahData.length} data`);
   console.log(`   - Kartu Keluarga: ${kkData.length} data`);
   console.log(`   - Penduduk: ${pendudukData.length} data`);
   console.log(`   - Mutasi: ${mutasiData.length} data`);
   console.log(`   - Surat Keluar: ${suratData.length} data`);
+  console.log("\n💡 Tips:");
+  console.log(
+    "   - Jika Excel tidak bisa dibuka, gunakan file CSV di folder dummy-data-csv/"
+  );
+  console.log(
+    "   - CSV bisa dibuka dengan Excel, Google Sheets, atau text editor"
+  );
   console.log("\n📖 Baca file DUMMY_DATA_GUIDE.md untuk cara import!");
 }
 

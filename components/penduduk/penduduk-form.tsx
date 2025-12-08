@@ -31,6 +31,7 @@ import { createPenduduk, updatePenduduk } from "@/app/actions/penduduk";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AlertCircle, Loader2 } from "lucide-react";
+import { LoadingOverlay } from "@/components/ui/loading-overlay";
 
 interface PendudukFormProps {
   kkList: Array<{ id: string; nomor_kk: string; alamat_lengkap: string }>;
@@ -117,8 +118,13 @@ export function PendudukForm({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {error && (
+    <div className="relative">
+      {/* Loading Overlay saat submit */}
+      {isSubmitting && (
+        <LoadingOverlay message="Menyimpan data penduduk..." />
+      )}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {error && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
@@ -528,5 +534,6 @@ export function PendudukForm({
         </Button>
       </div>
     </form>
+    </div>
   );
 }

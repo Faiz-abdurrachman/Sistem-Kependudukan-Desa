@@ -21,6 +21,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, LogOut } from "lucide-react";
 import { logout } from "@/app/actions/auth";
+import { LoadingOverlay } from "@/components/ui/loading-overlay";
 
 function LoginForm() {
   const router = useRouter();
@@ -127,7 +128,14 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 relative">
+      {/* Loading Overlay */}
+      {loading && (
+        <LoadingOverlay
+          fullScreen={true}
+          message="Sedang masuk..."
+        />
+      )}
       <div className="w-full max-w-md">
         <Card className="shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
           <CardHeader className="space-y-4 pb-8 pt-8">

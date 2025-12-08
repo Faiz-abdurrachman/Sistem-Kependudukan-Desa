@@ -42,11 +42,11 @@ Data harus diimport sesuai urutan karena ada dependency:
 
 1. Buka halaman **Wilayah** (`/wilayah`)
 2. Klik tombol **"Im3. Pilih file `dummy-data.xlsx`
-port Data"**
-4. **PENTING**: Pilih sheet **"Wilayah"** (bukan sheet lain!)
-5. Klik **"Import"**
-6. Tunggu sampai selesai
-7. **Catat ID Wilayah** yang terbuat (akan digunakan di Step 2)
+   port Data"**
+3. **PENTING**: Pilih sheet **"Wilayah"** (bukan sheet lain!)
+4. Klik **"Import"**
+5. Tunggu sampai selesai
+6. **Catat ID Wilayah** yang terbuat (akan digunakan di Step 2)
 
 ### 📝 Catatan:
 
