@@ -338,18 +338,61 @@ export async function importKartuKeluarga(data: any[]) {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     try {
-      // Map column names (flexible)
+      // Helper function untuk get value dengan case insensitive
+      const getValue = (keys: string[], defaultValue: any = null) => {
+        for (const key of keys) {
+          if (row[key] !== undefined && row[key] !== null && row[key] !== "") {
+            return row[key];
+          }
+          // Try case insensitive
+          const lowerKey = key.toLowerCase();
+          for (const rowKey in row) {
+            if (rowKey.toLowerCase() === lowerKey) {
+              return row[rowKey];
+            }
+          }
+        }
+        return defaultValue;
+      };
+
+      // Map column names (flexible - case insensitive)
       const kkData: any = {
         nomor_kk: String(
-          row["nomor_kk"] || row["Nomor KK"] || row["No KK"] || ""
+          getValue(["nomor_kk", "Nomor KK", "No KK", "nomor_kk"]) || ""
         ).padStart(16, "0"),
-        wilayah_id: row["wilayah_id"] || row["Wilayah ID"],
-        alamat_lengkap:
-          row["alamat_lengkap"] || row["Alamat Lengkap"] || row["Alamat"],
-        kepala_keluarga_id:
-          row["kepala_keluarga_id"] || row["Kepala Keluarga ID"] || null,
-        foto_scan_url: row["foto_scan_url"] || row["Foto Scan URL"] || null,
+        wilayah_id: getValue([
+          "wilayah_id",
+          "Wilayah ID",
+          "wilayah_id",
+        ]),
+        alamat_lengkap: getValue([
+          "alamat_lengkap",
+          "Alamat Lengkap",
+          "Alamat",
+          "alamat",
+        ]),
+        kepala_keluarga_id: getValue([
+          "kepala_keluarga_id",
+          "Kepala Keluarga ID",
+          "kepala_keluarga_id",
+        ]) || null,
+        foto_scan_url: getValue([
+          "foto_scan_url",
+          "Foto Scan URL",
+          "foto_scan_url",
+        ]) || null,
       };
+
+      // Check required fields
+      if (!kkData.nomor_kk || kkData.nomor_kk.length !== 16) {
+        throw new Error("nomor_kk harus 16 digit");
+      }
+      if (!kkData.wilayah_id) {
+        throw new Error("wilayah_id wajib diisi");
+      }
+      if (!kkData.alamat_lengkap) {
+        throw new Error("alamat_lengkap wajib diisi");
+      }
 
       // Validate
       const validatedData = createKartuKeluargaSchema.parse(kkData);

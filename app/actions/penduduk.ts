@@ -305,32 +305,107 @@ export async function importPenduduk(data: any[]) {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     try {
-      // Map column names (flexible)
-      const pendudukData: any = {
-        kk_id: row["kk_id"] || row["KK ID"] || row["Kartu Keluarga ID"],
-        nik: String(row["nik"] || row["NIK"] || "").padStart(16, "0"),
-        nama_lengkap: row["nama_lengkap"] || row["Nama Lengkap"] || row["Nama"],
-        tempat_lahir: row["tempat_lahir"] || row["Tempat Lahir"],
-        tgl_lahir: row["tgl_lahir"] || row["Tanggal Lahir"] || row["Tgl Lahir"],
-        jenis_kelamin:
-          row["jenis_kelamin"] || row["Jenis Kelamin"] || row["JK"],
-        gol_darah:
-          row["gol_darah"] || row["Golongan Darah"] || row["Gol Darah"] || "-",
-        agama: row["agama"] || row["Agama"],
-        status_kawin:
-          row["status_kawin"] || row["Status Kawin"] || row["Status"],
-        shdk: row["shdk"] || row["SHDK"],
-        pendidikan: row["pendidikan"] || row["Pendidikan"],
-        pekerjaan: row["pekerjaan"] || row["Pekerjaan"],
-        nama_ayah: row["nama_ayah"] || row["Nama Ayah"],
-        nama_ibu: row["nama_ibu"] || row["Nama Ibu"],
-        status_dasar: row["status_dasar"] || row["Status Dasar"] || "HIDUP",
+      // Helper function untuk get value dengan case insensitive
+      const getValue = (keys: string[], defaultValue: any = null) => {
+        for (const key of keys) {
+          if (row[key] !== undefined && row[key] !== null && row[key] !== "") {
+            return row[key];
+          }
+          // Try case insensitive
+          const lowerKey = key.toLowerCase();
+          for (const rowKey in row) {
+            if (rowKey.toLowerCase() === lowerKey) {
+              return row[rowKey];
+            }
+          }
+        }
+        return defaultValue;
       };
+
+      // Map column names (flexible - case insensitive)
+      const pendudukData: any = {
+        kk_id: getValue([
+          "kk_id",
+          "KK ID",
+          "Kartu Keluarga ID",
+          "kartu_keluarga_id",
+        ]),
+        nik: String(
+          getValue(["nik", "NIK"]) || ""
+        ).padStart(16, "0"),
+        nama_lengkap: getValue([
+          "nama_lengkap",
+          "Nama Lengkap",
+          "Nama",
+          "nama",
+        ]),
+        tempat_lahir: getValue(["tempat_lahir", "Tempat Lahir", "tempat_lahir"]),
+        tgl_lahir: getValue([
+          "tgl_lahir",
+          "Tanggal Lahir",
+          "Tgl Lahir",
+          "tanggal_lahir",
+        ]),
+        jenis_kelamin: getValue([
+          "jenis_kelamin",
+          "Jenis Kelamin",
+          "JK",
+          "jenis_kelamin",
+        ]),
+        gol_darah: getValue([
+          "gol_darah",
+          "Golongan Darah",
+          "Gol Darah",
+          "gol_darah",
+        ]) || "-",
+        agama: getValue(["agama", "Agama"]),
+        status_kawin: getValue([
+          "status_kawin",
+          "Status Kawin",
+          "Status",
+          "status_kawin",
+        ]),
+        shdk: getValue(["shdk", "SHDK"]),
+        pendidikan: getValue(["pendidikan", "Pendidikan"]),
+        pekerjaan: getValue(["pekerjaan", "Pekerjaan"]),
+        nama_ayah: getValue(["nama_ayah", "Nama Ayah"]),
+        nama_ibu: getValue(["nama_ibu", "Nama Ibu"]),
+        status_dasar: getValue([
+          "status_dasar",
+          "Status Dasar",
+          "status_dasar",
+        ]) || "HIDUP",
+      };
+
+      // Check required fields
+      if (!pendudukData.nik || pendudukData.nik.length !== 16) {
+        throw new Error("NIK harus 16 digit");
+      }
+      if (!pendudukData.nama_lengkap) {
+        throw new Error("nama_lengkap wajib diisi");
+      }
+      if (!pendudukData.tgl_lahir) {
+        throw new Error("tgl_lahir wajib diisi");
+      }
 
       // Convert tanggal lahir
       if (pendudukData.tgl_lahir) {
         if (typeof pendudukData.tgl_lahir === "string") {
-          pendudukData.tgl_lahir = new Date(pendudukData.tgl_lahir);
+          const date = new Date(pendudukData.tgl_lahir);
+          if (isNaN(date.getTime())) {
+            throw new Error(`tgl_lahir tidak valid: ${pendudukData.tgl_lahir}`);
+          }
+          pendudukData.tgl_lahir = date;
+        } else if (pendudukData.tgl_lahir instanceof Date) {
+          // Already a date
+        } else {
+          // Try Excel date serial number
+          const date = new Date((pendudukData.tgl_lahir - 25569) * 86400 * 1000);
+          if (!isNaN(date.getTime())) {
+            pendudukData.tgl_lahir = date;
+          } else {
+            throw new Error(`tgl_lahir tidak valid: ${pendudukData.tgl_lahir}`);
+          }
         }
       }
 

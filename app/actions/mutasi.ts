@@ -294,18 +294,94 @@ export async function importMutasi(data: any[]) {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     try {
-      // Map column names (flexible)
-      const mutasiData: any = {
-        penduduk_id:
-          row["penduduk_id"] || row["Penduduk ID"] || row["ID Penduduk"],
-        jenis_mutasi:
-          row["jenis_mutasi"] || row["Jenis Mutasi"] || row["Jenis"],
-        tanggal_peristiwa:
-          row["tanggal_peristiwa"] ||
-          row["Tanggal Peristiwa"] ||
-          row["Tanggal"],
-        keterangan: row["keterangan"] || row["Keterangan"] || null,
+      // Map column names (flexible - case insensitive)
+      const getValue = (keys: string[]) => {
+        for (const key of keys) {
+          // Try exact match
+          if (row[key] !== undefined && row[key] !== null && row[key] !== "") {
+            return row[key];
+          }
+          // Try case insensitive
+          const lowerKey = key.toLowerCase();
+          for (const rowKey in row) {
+            if (rowKey.toLowerCase() === lowerKey) {
+              return row[rowKey];
+            }
+          }
+        }
+        return null;
       };
+
+      const mutasiData: any = {
+        penduduk_id: getValue([
+          "penduduk_id",
+          "Penduduk ID",
+          "ID Penduduk",
+          "id_penduduk",
+        ]),
+        jenis_mutasi: getValue([
+          "jenis_mutasi",
+          "Jenis Mutasi",
+          "Jenis",
+          "jenis",
+        ]),
+        tanggal_peristiwa: getValue([
+          "tanggal_peristiwa",
+          "Tanggal Peristiwa",
+          "Tanggal",
+          "tanggal",
+        ]),
+        keterangan: getValue(["keterangan", "Keterangan"]) || null,
+      };
+
+      // Check required fields
+      if (!mutasiData.penduduk_id) {
+        throw new Error("penduduk_id wajib diisi");
+      }
+      if (!mutasiData.jenis_mutasi) {
+        throw new Error("jenis_mutasi wajib diisi");
+      }
+      if (!mutasiData.tanggal_peristiwa) {
+        throw new Error("tanggal_peristiwa wajib diisi");
+      }
+
+      // Normalize jenis_mutasi - handle various formats
+      const jenisMutasiUpper = String(mutasiData.jenis_mutasi)
+        .toUpperCase()
+        .trim();
+      
+      // Map common variations to valid enum values
+      if (jenisMutasiUpper === "LAHIR" || jenisMutasiUpper.includes("LAHIR")) {
+        mutasiData.jenis_mutasi = "LAHIR";
+      } else if (jenisMutasiUpper === "MATI" || jenisMutasiUpper.includes("MATI")) {
+        mutasiData.jenis_mutasi = "MATI";
+      } else if (
+        jenisMutasiUpper === "PINDAH_DATANG" ||
+        jenisMutasiUpper === "PINDAH DATANG" ||
+        jenisMutasiUpper.includes("MASUK") ||
+        jenisMutasiUpper.includes("DATANG")
+      ) {
+        mutasiData.jenis_mutasi = "PINDAH_DATANG";
+      } else if (
+        jenisMutasiUpper === "PINDAH_KELUAR" ||
+        jenisMutasiUpper === "PINDAH KELUAR" ||
+        jenisMutasiUpper.includes("KELUAR")
+      ) {
+        mutasiData.jenis_mutasi = "PINDAH_KELUAR";
+      } else if (
+        jenisMutasiUpper.includes("PERUBAHAN") ||
+        jenisMutasiUpper.includes("STATUS")
+      ) {
+        // "PERUBAHAN STATUS" - skip atau default ke PINDAH_DATANG
+        // Karena tidak ada enum untuk ini, kita skip row ini
+        throw new Error(
+          `jenis_mutasi "PERUBAHAN STATUS" tidak didukung. Gunakan: LAHIR, MATI, PINDAH_DATANG, atau PINDAH_KELUAR`
+        );
+      } else {
+        throw new Error(
+          `jenis_mutasi tidak valid: "${mutasiData.jenis_mutasi}". Harus: LAHIR, MATI, PINDAH_DATANG, atau PINDAH_KELUAR`
+        );
+      }
 
       // Convert tanggal ke format YYYY-MM-DD
       if (mutasiData.tanggal_peristiwa) {
@@ -314,16 +390,31 @@ export async function importMutasi(data: any[]) {
           if (!/^\d{4}-\d{2}-\d{2}$/.test(mutasiData.tanggal_peristiwa)) {
             // Convert dari Date object atau format lain
             const date = new Date(mutasiData.tanggal_peristiwa);
+            if (isNaN(date.getTime())) {
+              throw new Error(
+                `tanggal_peristiwa tidak valid: ${mutasiData.tanggal_peristiwa}`
+              );
+            }
             mutasiData.tanggal_peristiwa = date.toISOString().split("T")[0];
           }
         } else if (mutasiData.tanggal_peristiwa instanceof Date) {
           mutasiData.tanggal_peristiwa = mutasiData.tanggal_peristiwa
             .toISOString()
             .split("T")[0];
+        } else {
+          // Try to convert number (Excel date serial number)
+          const date = new Date((mutasiData.tanggal_peristiwa - 25569) * 86400 * 1000);
+          if (!isNaN(date.getTime())) {
+            mutasiData.tanggal_peristiwa = date.toISOString().split("T")[0];
+          } else {
+            throw new Error(
+              `tanggal_peristiwa tidak valid: ${mutasiData.tanggal_peristiwa}`
+            );
+          }
         }
       }
 
-      // Validate
+      // Validate dengan schema
       const validatedData = createMutasiSchema.parse(mutasiData);
       validData.push({ ...validatedData, _rowIndex: i + 2 });
     } catch (error: any) {

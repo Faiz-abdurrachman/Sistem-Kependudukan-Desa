@@ -310,17 +310,65 @@ export async function importSuratKeluar(data: any[]) {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     try {
-      // Map column names (flexible)
-      const suratData: any = {
-        penduduk_id:
-          row["penduduk_id"] || row["Penduduk ID"] || row["ID Penduduk"],
-        jenis_surat: row["jenis_surat"] || row["Jenis Surat"] || row["Jenis"],
-        nomor_surat:
-          row["nomor_surat"] || row["Nomor Surat"] || row["No Surat"],
-        tanggal_cetak:
-          row["tanggal_cetak"] || row["Tanggal Cetak"] || row["Tanggal"],
-        keterangan: row["keterangan"] || row["Keterangan"] || null,
+      // Helper function untuk get value dengan case insensitive
+      const getValue = (keys: string[], defaultValue: any = null) => {
+        for (const key of keys) {
+          if (row[key] !== undefined && row[key] !== null && row[key] !== "") {
+            return row[key];
+          }
+          // Try case insensitive
+          const lowerKey = key.toLowerCase();
+          for (const rowKey in row) {
+            if (rowKey.toLowerCase() === lowerKey) {
+              return row[rowKey];
+            }
+          }
+        }
+        return defaultValue;
       };
+
+      // Map column names (flexible - case insensitive)
+      const suratData: any = {
+        penduduk_id: getValue([
+          "penduduk_id",
+          "Penduduk ID",
+          "ID Penduduk",
+          "id_penduduk",
+        ]),
+        jenis_surat: getValue([
+          "jenis_surat",
+          "Jenis Surat",
+          "Jenis",
+          "jenis",
+        ]),
+        nomor_surat: getValue([
+          "nomor_surat",
+          "Nomor Surat",
+          "No Surat",
+          "nomor_surat",
+        ]),
+        tanggal_cetak: getValue([
+          "tanggal_cetak",
+          "Tanggal Cetak",
+          "Tanggal",
+          "tanggal",
+        ]),
+        keterangan: getValue(["keterangan", "Keterangan"]) || null,
+      };
+
+      // Check required fields
+      if (!suratData.penduduk_id) {
+        throw new Error("penduduk_id wajib diisi");
+      }
+      if (!suratData.jenis_surat) {
+        throw new Error("jenis_surat wajib diisi");
+      }
+      if (!suratData.nomor_surat) {
+        throw new Error("nomor_surat wajib diisi");
+      }
+      if (!suratData.tanggal_cetak) {
+        throw new Error("tanggal_cetak wajib diisi");
+      }
 
       // Convert tanggal ke format YYYY-MM-DD
       if (suratData.tanggal_cetak) {
@@ -329,12 +377,29 @@ export async function importSuratKeluar(data: any[]) {
           if (!/^\d{4}-\d{2}-\d{2}$/.test(suratData.tanggal_cetak)) {
             // Convert dari Date object atau format lain
             const date = new Date(suratData.tanggal_cetak);
+            if (isNaN(date.getTime())) {
+              throw new Error(
+                `tanggal_cetak tidak valid: ${suratData.tanggal_cetak}`
+              );
+            }
             suratData.tanggal_cetak = date.toISOString().split("T")[0];
           }
         } else if (suratData.tanggal_cetak instanceof Date) {
           suratData.tanggal_cetak = suratData.tanggal_cetak
             .toISOString()
             .split("T")[0];
+        } else {
+          // Try Excel date serial number
+          const date = new Date(
+            (suratData.tanggal_cetak - 25569) * 86400 * 1000
+          );
+          if (!isNaN(date.getTime())) {
+            suratData.tanggal_cetak = date.toISOString().split("T")[0];
+          } else {
+            throw new Error(
+              `tanggal_cetak tidak valid: ${suratData.tanggal_cetak}`
+            );
+          }
         }
       }
 

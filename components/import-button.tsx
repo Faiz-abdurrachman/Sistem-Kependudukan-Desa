@@ -53,14 +53,25 @@ export function ImportButton({
       if (result.success > 0) {
         toast.success(
           `Berhasil mengimport ${result.success} data${
-            result.errors.length > 0 ? ` (${result.errors.length} error)` : ""
+            result.errors.length > 0
+              ? ` (${result.errors.length} data gagal)`
+              : ""
           }`
         );
+      } else if (result.errors.length > 0) {
+        // Jika tidak ada yang berhasil, hanya tampilkan error
+        toast.error(
+          `Gagal mengimport: ${result.errors.length} data error. Cek console untuk detail.`
+        );
+      } else {
+        toast.error("Tidak ada data yang berhasil diimport");
       }
 
       if (result.errors.length > 0) {
         console.error("Import errors:", result.errors);
-        toast.error(`Ada ${result.errors.length} data yang gagal diimport`);
+        // Log first 10 errors untuk debugging
+        const errorPreview = result.errors.slice(0, 10);
+        console.error("Error preview (first 10):", errorPreview);
       }
 
       // Reset file input

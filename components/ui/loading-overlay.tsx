@@ -19,33 +19,13 @@ export function LoadingOverlay({
   return (
     <div
       className={`${
-        fullScreen ? "fixed inset-0 z-50" : "absolute inset-0 z-10"
-      } flex items-center justify-center bg-black/20 backdrop-blur-sm`}
-      style={{
-        // Optimasi performa dengan will-change
-        willChange: "opacity",
-      }}
+        fullScreen ? "fixed inset-0 z-[9999]" : "absolute inset-0 z-[100]"
+      } flex items-center justify-center bg-black/50 backdrop-blur-sm`}
     >
-      <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-8 flex flex-col items-center space-y-4 min-w-[200px]">
+      <div className="bg-slate-800/95 backdrop-blur-md rounded-lg shadow-2xl p-6 flex flex-col items-center space-y-4 min-w-[200px] border border-slate-700">
         {/* Spinner dengan animasi smooth */}
-        <div className="relative">
-          <Loader2
-            className="h-10 w-10 animate-spin text-blue-600"
-            style={{
-              // Optimasi animasi dengan transform
-              willChange: "transform",
-            }}
-          />
-          {/* Pulse effect ringan */}
-          <div
-            className="absolute inset-0 rounded-full border-4 border-blue-200 animate-pulse"
-            style={{
-              animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-              willChange: "opacity",
-            }}
-          />
-        </div>
-        <p className="text-gray-700 font-medium text-sm">{message}</p>
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+        <p className="text-white font-medium text-sm text-center">{message}</p>
       </div>
     </div>
   );
