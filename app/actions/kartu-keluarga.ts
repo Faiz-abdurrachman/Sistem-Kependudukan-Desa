@@ -339,7 +339,7 @@ export async function importKartuKeluarga(data: any[]) {
     .from("wilayah")
     .select("id")
     .order("created_at", { ascending: true }); // Order by created_at untuk konsistensi
-  
+
   // Create mapping dari index ke UUID (untuk format "wilayah-1", "wilayah-2", dll)
   const wilayahMap = new Map<string, string>();
   if (allWilayah && allWilayah.length > 0) {
@@ -356,6 +356,7 @@ export async function importKartuKeluarga(data: any[]) {
     const row = data[i];
     try {
       // Helper function untuk get value dengan case insensitive
+      // Ignore 'id' column dari CSV (bukan field di schema)
       const getValue = (keys: string[], defaultValue: any = null) => {
         for (const key of keys) {
           if (row[key] !== undefined && row[key] !== null && row[key] !== "") {
@@ -364,6 +365,8 @@ export async function importKartuKeluarga(data: any[]) {
           // Try case insensitive
           const lowerKey = key.toLowerCase();
           for (const rowKey in row) {
+            // Skip 'id' column (bukan field di schema)
+            if (rowKey.toLowerCase() === "id") continue;
             if (rowKey.toLowerCase() === lowerKey) {
               return row[rowKey];
             }
@@ -374,20 +377,23 @@ export async function importKartuKeluarga(data: any[]) {
 
       // Map column names (flexible - case insensitive)
       let wilayahIdValue = getValue(["wilayah_id", "Wilayah ID", "wilayah_id"]);
-      
+
       // Map wilayah_id dari format "wilayah-X" ke UUID
       if (wilayahIdValue) {
         const wilayahIdStr = String(wilayahIdValue).trim();
-        
-        // Cek apakah sudah UUID format
-        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(wilayahIdStr);
-        
+
+        // Cek apakah sudah UUID format (general format check, Zod akan validate strict)
+        const isUUID =
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+            wilayahIdStr
+          );
+
         if (isUUID) {
           // Sudah UUID, langsung pakai
           wilayahIdValue = wilayahIdStr;
         } else {
           // Coba mapping dari format "wilayah-X"
-          const mappedWilayahId = wilayahMap.get(wilayahIdStr);
+          const mappedWilayahId = wilayahMap.get(wilayahIdStr.toLowerCase());
           if (mappedWilayahId) {
             wilayahIdValue = mappedWilayahId;
           } else {
@@ -398,9 +404,45 @@ export async function importKartuKeluarga(data: any[]) {
         }
       }
 
-      let fotoScanUrl = getValue(["foto_scan_url", "Foto Scan URL", "foto_scan_url"]);
+      // Handle kepala_keluarga_id - validate UUID atau set to null
+      // Support both 'kepala_keluarga_id' and 'kk_id' as column names
+      let kepalaKeluargaIdValue = getValue([
+        "kepala_keluarga_id",
+        "Kepala Keluarga ID",
+        "kk_id", // Alias untuk kepala_keluarga_id
+        "KK ID",
+      ]);
+      
+      // Validate kepala_keluarga_id - must be UUID or null/empty
+      if (kepalaKeluargaIdValue) {
+        const kepalaKeluargaIdStr = String(kepalaKeluargaIdValue).trim();
+        // Cek apakah sudah UUID format (general format check, Zod akan validate strict)
+        const isUUID =
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+            kepalaKeluargaIdStr
+          );
+        
+        if (!isUUID) {
+          // Jika bukan UUID dan bukan empty, set to null
+          kepalaKeluargaIdValue = null;
+        } else {
+          kepalaKeluargaIdValue = kepalaKeluargaIdStr;
+        }
+      } else {
+        kepalaKeluargaIdValue = null;
+      }
+
+      let fotoScanUrl = getValue([
+        "foto_scan_url",
+        "Foto Scan URL",
+        "foto_scan_url",
+      ]);
       // Convert empty string to null
-      if (fotoScanUrl === "" || fotoScanUrl === null || fotoScanUrl === undefined) {
+      if (
+        fotoScanUrl === "" ||
+        fotoScanUrl === null ||
+        fotoScanUrl === undefined
+      ) {
         fotoScanUrl = null;
       }
 
@@ -415,12 +457,7 @@ export async function importKartuKeluarga(data: any[]) {
           "Alamat",
           "alamat",
         ]),
-        kepala_keluarga_id:
-          getValue([
-            "kepala_keluarga_id",
-            "Kepala Keluarga ID",
-            "kepala_keluarga_id",
-          ]) || null,
+        kepala_keluarga_id: kepalaKeluargaIdValue,
         foto_scan_url: fotoScanUrl,
       };
 
@@ -441,11 +478,25 @@ export async function importKartuKeluarga(data: any[]) {
         delete kkData.foto_scan_url;
       }
 
-      // Validate
-      const validatedData = createKartuKeluargaSchema.parse(kkData);
-      validData.push({ ...validatedData, _rowIndex: i + 2 });
+      // Validate dengan better error handling
+      try {
+        const validatedData = createKartuKeluargaSchema.parse(kkData);
+        validData.push({ ...validatedData, _rowIndex: i + 2 });
+      } catch (validationError: any) {
+        // Handle Zod validation errors dengan lebih detail
+        if (validationError.errors && Array.isArray(validationError.errors)) {
+          const errorMessages = validationError.errors.map((err: any) => {
+            const field = err.path?.join(".") || "unknown";
+            return `${field}: ${err.message}`;
+          });
+          throw new Error(errorMessages.join(", "));
+        }
+        throw validationError;
+      }
     } catch (error: any) {
-      errors.push(`Baris ${i + 2}: ${error.message || "Data tidak valid"}`);
+      // Format error message dengan lebih jelas
+      const errorMsg = error.message || "Data tidak valid";
+      errors.push(`Baris ${i + 2}: ${errorMsg}`);
     }
   }
 
