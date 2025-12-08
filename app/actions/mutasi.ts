@@ -349,11 +349,14 @@ export async function importMutasi(data: any[]) {
       const jenisMutasiUpper = String(mutasiData.jenis_mutasi)
         .toUpperCase()
         .trim();
-      
+
       // Map common variations to valid enum values
       if (jenisMutasiUpper === "LAHIR" || jenisMutasiUpper.includes("LAHIR")) {
         mutasiData.jenis_mutasi = "LAHIR";
-      } else if (jenisMutasiUpper === "MATI" || jenisMutasiUpper.includes("MATI")) {
+      } else if (
+        jenisMutasiUpper === "MATI" ||
+        jenisMutasiUpper.includes("MATI")
+      ) {
         mutasiData.jenis_mutasi = "MATI";
       } else if (
         jenisMutasiUpper === "PINDAH_DATANG" ||
@@ -403,7 +406,9 @@ export async function importMutasi(data: any[]) {
             .split("T")[0];
         } else {
           // Try to convert number (Excel date serial number)
-          const date = new Date((mutasiData.tanggal_peristiwa - 25569) * 86400 * 1000);
+          const date = new Date(
+            (mutasiData.tanggal_peristiwa - 25569) * 86400 * 1000
+          );
           if (!isNaN(date.getTime())) {
             mutasiData.tanggal_peristiwa = date.toISOString().split("T")[0];
           } else {

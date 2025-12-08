@@ -28,10 +28,14 @@ export const kartuKeluargaSchema = z.object({
   wilayah_id: z.string().uuid("ID Wilayah tidak valid"),
 
   foto_scan_url: z
-    .string()
-    .url("URL foto scan tidak valid")
+    .union([
+      z.string().url("URL foto scan tidak valid"),
+      z.string().length(0), // Allow empty string
+      z.null(),
+    ])
     .optional()
-    .nullable(),
+    .nullable()
+    .transform((val) => (val === "" ? null : val)), // Transform empty string to null
 });
 
 // Schema untuk Create (tanpa ID)

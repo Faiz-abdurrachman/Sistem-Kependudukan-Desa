@@ -330,16 +330,18 @@ export async function importPenduduk(data: any[]) {
           "Kartu Keluarga ID",
           "kartu_keluarga_id",
         ]),
-        nik: String(
-          getValue(["nik", "NIK"]) || ""
-        ).padStart(16, "0"),
+        nik: String(getValue(["nik", "NIK"]) || "").padStart(16, "0"),
         nama_lengkap: getValue([
           "nama_lengkap",
           "Nama Lengkap",
           "Nama",
           "nama",
         ]),
-        tempat_lahir: getValue(["tempat_lahir", "Tempat Lahir", "tempat_lahir"]),
+        tempat_lahir: getValue([
+          "tempat_lahir",
+          "Tempat Lahir",
+          "tempat_lahir",
+        ]),
         tgl_lahir: getValue([
           "tgl_lahir",
           "Tanggal Lahir",
@@ -352,12 +354,9 @@ export async function importPenduduk(data: any[]) {
           "JK",
           "jenis_kelamin",
         ]),
-        gol_darah: getValue([
-          "gol_darah",
-          "Golongan Darah",
-          "Gol Darah",
-          "gol_darah",
-        ]) || "-",
+        gol_darah:
+          getValue(["gol_darah", "Golongan Darah", "Gol Darah", "gol_darah"]) ||
+          "-",
         agama: getValue(["agama", "Agama"]),
         status_kawin: getValue([
           "status_kawin",
@@ -370,11 +369,8 @@ export async function importPenduduk(data: any[]) {
         pekerjaan: getValue(["pekerjaan", "Pekerjaan"]),
         nama_ayah: getValue(["nama_ayah", "Nama Ayah"]),
         nama_ibu: getValue(["nama_ibu", "Nama Ibu"]),
-        status_dasar: getValue([
-          "status_dasar",
-          "Status Dasar",
-          "status_dasar",
-        ]) || "HIDUP",
+        status_dasar:
+          getValue(["status_dasar", "Status Dasar", "status_dasar"]) || "HIDUP",
       };
 
       // Check required fields
@@ -400,7 +396,9 @@ export async function importPenduduk(data: any[]) {
           // Already a date
         } else {
           // Try Excel date serial number
-          const date = new Date((pendudukData.tgl_lahir - 25569) * 86400 * 1000);
+          const date = new Date(
+            (pendudukData.tgl_lahir - 25569) * 86400 * 1000
+          );
           if (!isNaN(date.getTime())) {
             pendudukData.tgl_lahir = date;
           } else {

@@ -335,12 +335,7 @@ export async function importSuratKeluar(data: any[]) {
           "ID Penduduk",
           "id_penduduk",
         ]),
-        jenis_surat: getValue([
-          "jenis_surat",
-          "Jenis Surat",
-          "Jenis",
-          "jenis",
-        ]),
+        jenis_surat: getValue(["jenis_surat", "Jenis Surat", "Jenis", "jenis"]),
         nomor_surat: getValue([
           "nomor_surat",
           "Nomor Surat",

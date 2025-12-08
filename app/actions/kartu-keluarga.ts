@@ -334,6 +334,23 @@ export async function importKartuKeluarga(data: any[]) {
   const batchSize = 50;
   const validData: any[] = [];
 
+  // Step 0: Get all wilayah untuk mapping wilayah_id
+  const { data: allWilayah } = await supabase
+    .from("wilayah")
+    .select("id")
+    .order("created_at", { ascending: true }); // Order by created_at untuk konsistensi
+  
+  // Create mapping dari index ke UUID (untuk format "wilayah-1", "wilayah-2", dll)
+  const wilayahMap = new Map<string, string>();
+  if (allWilayah && allWilayah.length > 0) {
+    allWilayah.forEach((w, index) => {
+      // Map "wilayah-1" -> UUID, "wilayah-2" -> UUID, dll (1-based index)
+      wilayahMap.set(`wilayah-${index + 1}`, w.id);
+      // Juga map langsung dengan UUID jika sudah UUID
+      wilayahMap.set(w.id, w.id);
+    });
+  }
+
   // Step 1: Validate and prepare all data
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
@@ -356,31 +373,55 @@ export async function importKartuKeluarga(data: any[]) {
       };
 
       // Map column names (flexible - case insensitive)
+      let wilayahIdValue = getValue(["wilayah_id", "Wilayah ID", "wilayah_id"]);
+      
+      // Map wilayah_id dari format "wilayah-X" ke UUID
+      if (wilayahIdValue) {
+        const wilayahIdStr = String(wilayahIdValue).trim();
+        
+        // Cek apakah sudah UUID format
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(wilayahIdStr);
+        
+        if (isUUID) {
+          // Sudah UUID, langsung pakai
+          wilayahIdValue = wilayahIdStr;
+        } else {
+          // Coba mapping dari format "wilayah-X"
+          const mappedWilayahId = wilayahMap.get(wilayahIdStr);
+          if (mappedWilayahId) {
+            wilayahIdValue = mappedWilayahId;
+          } else {
+            throw new Error(
+              `wilayah_id tidak valid: "${wilayahIdStr}". Pastikan wilayah sudah diimport terlebih dahulu atau gunakan UUID yang valid.`
+            );
+          }
+        }
+      }
+
+      let fotoScanUrl = getValue(["foto_scan_url", "Foto Scan URL", "foto_scan_url"]);
+      // Convert empty string to null
+      if (fotoScanUrl === "" || fotoScanUrl === null || fotoScanUrl === undefined) {
+        fotoScanUrl = null;
+      }
+
       const kkData: any = {
         nomor_kk: String(
           getValue(["nomor_kk", "Nomor KK", "No KK", "nomor_kk"]) || ""
         ).padStart(16, "0"),
-        wilayah_id: getValue([
-          "wilayah_id",
-          "Wilayah ID",
-          "wilayah_id",
-        ]),
+        wilayah_id: wilayahIdValue,
         alamat_lengkap: getValue([
           "alamat_lengkap",
           "Alamat Lengkap",
           "Alamat",
           "alamat",
         ]),
-        kepala_keluarga_id: getValue([
-          "kepala_keluarga_id",
-          "Kepala Keluarga ID",
-          "kepala_keluarga_id",
-        ]) || null,
-        foto_scan_url: getValue([
-          "foto_scan_url",
-          "Foto Scan URL",
-          "foto_scan_url",
-        ]) || null,
+        kepala_keluarga_id:
+          getValue([
+            "kepala_keluarga_id",
+            "Kepala Keluarga ID",
+            "kepala_keluarga_id",
+          ]) || null,
+        foto_scan_url: fotoScanUrl,
       };
 
       // Check required fields
@@ -392,6 +433,12 @@ export async function importKartuKeluarga(data: any[]) {
       }
       if (!kkData.alamat_lengkap) {
         throw new Error("alamat_lengkap wajib diisi");
+      }
+
+      // Handle foto_scan_url validation - jika null, skip URL validation
+      if (kkData.foto_scan_url === null) {
+        // Remove foto_scan_url dari data untuk skip validation
+        delete kkData.foto_scan_url;
       }
 
       // Validate
