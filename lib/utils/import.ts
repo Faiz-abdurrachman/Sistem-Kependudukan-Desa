@@ -36,6 +36,7 @@ export function parseExcelFile(file: File): Promise<any[]> {
 
 /**
  * Parse CSV file ke JSON
+ * Improved CSV parser dengan support untuk quoted values dan special characters
  */
 export function parseCSVFile(file: File): Promise<any[]> {
   return new Promise((resolve, reject) => {
@@ -44,23 +45,74 @@ export function parseCSVFile(file: File): Promise<any[]> {
     reader.onload = (e) => {
       try {
         const text = e.target?.result as string;
-        const lines = text.split("\n").filter((line) => line.trim());
-
-        if (lines.length === 0) {
+        
+        if (!text || text.trim().length === 0) {
           resolve([]);
           return;
         }
 
-        // Parse header
-        const headers = lines[0]
-          .split(",")
-          .map((h) => h.trim().replace(/^"|"$/g, ""));
+        // Split lines dengan handle untuk line breaks dalam quoted values
+        const lines: string[] = [];
+        let currentLine = "";
+        let inQuotes = false;
+        
+        for (let i = 0; i < text.length; i++) {
+          const char = text[i];
+          const nextChar = text[i + 1];
+          
+          if (char === '"') {
+            inQuotes = !inQuotes;
+            currentLine += char;
+          } else if (char === '\n' && !inQuotes) {
+            lines.push(currentLine);
+            currentLine = "";
+          } else {
+            currentLine += char;
+          }
+        }
+        
+        if (currentLine.trim()) {
+          lines.push(currentLine);
+        }
+
+        const filteredLines = lines.filter((line) => line.trim());
+
+        if (filteredLines.length === 0) {
+          resolve([]);
+          return;
+        }
+
+        // Parse header dengan proper CSV parsing
+        const parseCSVLine = (line: string): string[] => {
+          const values: string[] = [];
+          let current = "";
+          let inQuotes = false;
+          
+          for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            
+            if (char === '"') {
+              inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+              values.push(current.trim());
+              current = "";
+            } else {
+              current += char;
+            }
+          }
+          values.push(current.trim());
+          return values;
+        };
+
+        const headers = parseCSVLine(filteredLines[0]).map((h) => 
+          h.replace(/^"|"$/g, "").trim()
+        );
 
         // Parse data rows
-        const data = lines.slice(1).map((line) => {
-          const values = line
-            .split(",")
-            .map((v) => v.trim().replace(/^"|"$/g, ""));
+        const data = filteredLines.slice(1).map((line) => {
+          const values = parseCSVLine(line).map((v) => 
+            v.replace(/^"|"$/g, "").trim()
+          );
           const row: any = {};
           headers.forEach((header, index) => {
             row[header] = values[index] || "";
@@ -80,7 +132,7 @@ export function parseCSVFile(file: File): Promise<any[]> {
       reject(new Error("Gagal membaca file"));
     };
 
-    reader.readAsText(file);
+    reader.readAsText(file, "UTF-8");
   });
 }
 

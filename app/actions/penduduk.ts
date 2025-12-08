@@ -298,7 +298,10 @@ export async function importPenduduk(data: any[]) {
 
   const errors: string[] = [];
   let success = 0;
+  const batchSize = 50; // Process 50 records at a time
+  const validData: any[] = [];
 
+  // Step 1: Validate and prepare all data
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     try {
@@ -333,32 +336,51 @@ export async function importPenduduk(data: any[]) {
 
       // Validate
       const validatedData = createPendudukSchema.parse(pendudukData);
-
-      // Check NIK duplicate
-      const { data: existing } = await supabase
-        .from("penduduk")
-        .select("id")
-        .eq("nik", validatedData.nik)
-        .single();
-
-      if (existing) {
-        errors.push(`Baris ${i + 2}: NIK ${validatedData.nik} sudah terdaftar`);
-        continue;
-      }
-
-      // Insert
-      const { error } = await supabase.from("penduduk").insert({
-        ...validatedData,
-        tgl_lahir: validatedData.tgl_lahir.toISOString().split("T")[0],
-      });
-
-      if (error) {
-        errors.push(`Baris ${i + 2}: ${error.message}`);
-      } else {
-        success++;
-      }
+      validData.push({ ...validatedData, _rowIndex: i + 2 });
     } catch (error: any) {
       errors.push(`Baris ${i + 2}: ${error.message || "Data tidak valid"}`);
+    }
+  }
+
+  // Step 2: Get all existing NIK untuk check duplicate (batch query)
+  if (validData.length > 0) {
+    const allNIKs = validData.map((d) => d.nik);
+    const { data: existingPenduduk } = await supabase
+      .from("penduduk")
+      .select("nik")
+      .in("nik", allNIKs);
+
+    const existingNIKs = new Set(
+      (existingPenduduk || []).map((p) => p.nik)
+    );
+
+    // Step 3: Filter out duplicates
+    const toInsert = validData.filter((data) => {
+      if (existingNIKs.has(data.nik)) {
+        errors.push(`Baris ${data._rowIndex}: NIK ${data.nik} sudah terdaftar`);
+        return false;
+      }
+      existingNIKs.add(data.nik); // Add to set untuk avoid duplicate dalam batch
+      return true;
+    });
+
+    // Step 4: Batch insert
+    for (let i = 0; i < toInsert.length; i += batchSize) {
+      const batch = toInsert.slice(i, i + batchSize);
+      const insertData = batch.map(({ _rowIndex, ...data }) => ({
+        ...data,
+        tgl_lahir: data.tgl_lahir.toISOString().split("T")[0],
+      }));
+
+      const { error } = await supabase.from("penduduk").insert(insertData);
+
+      if (error) {
+        batch.forEach((item) => {
+          errors.push(`Baris ${item._rowIndex}: ${error.message}`);
+        });
+      } else {
+        success += batch.length;
+      }
     }
   }
 

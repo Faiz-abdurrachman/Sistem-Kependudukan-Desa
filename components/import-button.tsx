@@ -11,6 +11,7 @@ import { parseFile } from "@/lib/utils/import";
 import { toast } from "sonner";
 import { useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { LoadingOverlay } from "@/components/ui/loading-overlay";
 
 interface ImportButtonProps {
   onImport: (data: any[]) => Promise<{ success: number; errors: string[] }>;
@@ -79,7 +80,11 @@ export function ImportButton({
   };
 
   return (
-    <>
+    <div className="relative">
+      {/* Loading Overlay saat import */}
+      {isImporting && (
+        <LoadingOverlay message="Mengimport data, harap tunggu..." />
+      )}
       <input
         ref={fileInputRef}
         type="file"
@@ -107,6 +112,6 @@ export function ImportButton({
           </>
         )}
       </Button>
-    </>
+    </div>
   );
 }
