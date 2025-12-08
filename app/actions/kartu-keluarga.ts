@@ -416,12 +416,16 @@ export async function importKartuKeluarga(data: any[]) {
 
       // Handle kepala_keluarga_id - validate UUID atau set to null
       // Support both 'kepala_keluarga_id' and 'kk_id' as column names
+      // Note: 'kk_id' is an alias, but we store it as 'kepala_keluarga_id' in the database
       let kepalaKeluargaIdValue = getValue([
         "kepala_keluarga_id",
         "Kepala Keluarga ID",
-        "kk_id", // Alias untuk kepala_keluarga_id
+        "kk_id", // Alias untuk kepala_keluarga_id (from CSV)
         "KK ID",
       ]);
+      
+      // Also check if there's a direct 'kk_id' column that we should ignore
+      // (kk_id in CSV should map to kepala_keluarga_id, not be a separate field)
 
       // Validate kepala_keluarga_id - must be UUID or null/empty
       if (kepalaKeluargaIdValue) {
@@ -484,7 +488,9 @@ export async function importKartuKeluarga(data: any[]) {
         );
       }
 
-      const kkData: any = {
+      // Build kkData object - hanya field yang valid untuk schema
+      // Pastikan tidak ada field tambahan yang tidak valid (seperti kk_id, tgl_lahir, dll)
+      const kkData: Record<string, any> = {
         nomor_kk: nomorKKStr,
         wilayah_id: wilayahIdValue,
         alamat_lengkap: getValue([
@@ -493,9 +499,24 @@ export async function importKartuKeluarga(data: any[]) {
           "Alamat",
           "alamat",
         ]),
-        kepala_keluarga_id: kepalaKeluargaIdValue,
-        foto_scan_url: fotoScanUrl,
       };
+
+      // Only add kepala_keluarga_id if it has a valid UUID value
+      if (kepalaKeluargaIdValue && kepalaKeluargaIdValue !== null) {
+        kkData.kepala_keluarga_id = kepalaKeluargaIdValue;
+      }
+
+      // Only add foto_scan_url if it has a valid value (not null or empty)
+      if (fotoScanUrl !== null && fotoScanUrl !== undefined && fotoScanUrl !== "") {
+        kkData.foto_scan_url = fotoScanUrl;
+      }
+      
+      // Explicitly remove any invalid fields that might have been parsed from CSV
+      // (like kk_id, tgl_lahir, or other fields not in the schema)
+      delete kkData.kk_id;
+      delete kkData.id;
+      delete kkData.tgl_lahir;
+      delete kkData._rowIndex;
 
       // Check required fields
       if (!kkData.wilayah_id) {
@@ -512,7 +533,9 @@ export async function importKartuKeluarga(data: any[]) {
       }
 
       // Validate dengan better error handling
+      // Use .passthrough() untuk ignore unknown fields, tapi kita sudah filter manual
       try {
+        // Parse dengan strict mode untuk memastikan hanya field yang valid
         const validatedData = createKartuKeluargaSchema.parse(kkData);
         validData.push({ ...validatedData, _rowIndex: i + 2 });
       } catch (validationError: any) {
@@ -520,18 +543,44 @@ export async function importKartuKeluarga(data: any[]) {
         if (validationError.errors && Array.isArray(validationError.errors)) {
           const errorMessages = validationError.errors.map((err: any) => {
             const field = err.path?.join(".") || "unknown";
+            
             // Map field names untuk user-friendly messages
             const fieldNames: { [key: string]: string } = {
               nomor_kk: "Nomor KK",
               wilayah_id: "Wilayah ID",
               kepala_keluarga_id: "Kepala Keluarga ID",
+              kk_id: "Kepala Keluarga ID", // Map kk_id to kepala_keluarga_id
               alamat_lengkap: "Alamat Lengkap",
               foto_scan_url: "Foto Scan URL",
             };
+            
             const fieldName = fieldNames[field] || field;
+            
+            // Filter out errors untuk field yang tidak relevan (seperti tgl_lahir untuk KK)
+            // atau field yang sudah kita hapus (seperti kk_id yang sudah di-map ke kepala_keluarga_id)
+            if (
+              field === "tgl_lahir" || 
+              field.includes("tgl_lahir") ||
+              field === "id" ||
+              (field === "kk_id" && err.message.includes("Kartu Keluarga"))
+            ) {
+              // Jika error kk_id dengan message "ID Kartu Keluarga tidak valid",
+              // ini berarti kepala_keluarga_id tidak valid, bukan kk_id
+              if (field === "kk_id" && err.message.includes("Kartu Keluarga")) {
+                return `Kepala Keluarga ID: ${err.message.replace("ID Kartu Keluarga", "ID Kepala Keluarga")}`;
+              }
+              return null; // Ignore field yang tidak relevan
+            }
+            
             return `${fieldName}: ${err.message}`;
-          });
-          throw new Error(errorMessages.join("; "));
+          }).filter((msg) => msg !== null); // Remove null messages
+          
+          if (errorMessages.length > 0) {
+            throw new Error(errorMessages.join("; "));
+          } else {
+            // Jika semua error di-filter out, skip row ini
+            throw new Error("Data tidak valid (mengandung field yang tidak relevan)");
+          }
         }
         throw validationError;
       }

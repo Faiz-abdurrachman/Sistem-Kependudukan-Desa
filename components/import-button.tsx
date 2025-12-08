@@ -86,18 +86,19 @@ export function ImportButton({
               errorMessage = parts.slice(1).join(":").trim();
             }
           }
-          
+
           // Normalize error message (remove specific values untuk grouping)
           const normalizedError = errorMessage
             .replace(/\d+/g, "N") // Replace numbers with N
             .replace(/["']/g, "") // Remove quotes
             .trim();
-          
-          errorGroups[normalizedError] = (errorGroups[normalizedError] || 0) + 1;
+
+          errorGroups[normalizedError] =
+            (errorGroups[normalizedError] || 0) + 1;
         });
 
         console.log("Error summary:", errorGroups);
-        
+
         // Tampilkan error yang paling sering terjadi
         const sortedErrors = Object.entries(errorGroups)
           .sort((a, b) => b[1] - a[1])
@@ -110,11 +111,13 @@ export function ImportButton({
         errorPreview.forEach((err, idx) => {
           console.log(`${idx + 1}. ${err}`);
         });
-        
+
         // Jika ada lebih dari 20 errors, tampilkan info
         if (result.errors.length > 20) {
           console.log(`\n... and ${result.errors.length - 20} more errors`);
-          console.log(`\n💡 Tip: Perbaiki error yang paling umum terlebih dahulu untuk mengurangi jumlah error.`);
+          console.log(
+            `\n💡 Tip: Perbaiki error yang paling umum terlebih dahulu untuk mengurangi jumlah error.`
+          );
         }
         console.groupEnd();
       }
